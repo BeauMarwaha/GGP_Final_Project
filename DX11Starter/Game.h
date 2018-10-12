@@ -31,10 +31,13 @@ public:
 	void OnMouseWheel(float wheelDelta,   int x, int y);
 
 private:
-	// Initialization helper methods - feel free to customize, combine, etc.
+	// Initialization helper methods
 	void LoadMaterials();
 	void CreateBasicGeometry();
 	void LoadModels();
+
+	// FPS camera
+	Camera* camera;
 
 	// Entity Vector Collection
 	std::vector<Entity> entities;
@@ -42,8 +45,8 @@ private:
 	// Mesh Pointer Vector Collection
 	std::vector<Mesh*> meshes;
 
-	// FPS camera
-	Camera* camera;
+	// Basic Material reference
+	Material* material;
 
 	// Wrappers for DirectX shaders to provide simplified functionality
 	SimpleVertexShader* vertexShader;
@@ -52,9 +55,6 @@ private:
 	// DXTK Texture resources
 	ID3D11ShaderResourceView* shaderResourceView;
 	ID3D11SamplerState* samplerState;
-
-	// Basic Material reference
-	Material* material;
 
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.

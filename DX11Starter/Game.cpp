@@ -71,7 +71,7 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
-	// Set up the directional light source
+	// Set up the directional light sources
 	lights[0].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
 	lights[0].DiffuseColor = XMFLOAT4(0, 0, 1, 1);
 	lights[0].Direction = XMFLOAT3(1, -1, 0);
