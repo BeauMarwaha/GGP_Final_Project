@@ -3,119 +3,422 @@
 // For the C++ standard library
 using namespace std;
 
+// For the DirectX Math library
+using namespace DirectX;
+
 EntityManager::EntityManager()
 {
-	// Instantiate the Entity Map
-	entities = map<string, Entity*>();
+	// Instantiate the Maps
+	entities = map<string, SmartEntity>();
+	meshes = map<string, SmartMesh>();
+	materials = map<string, SmartMaterial>();
+	vertexShaders = map<string, SmartVertexShader>();
+	pixelShaders = map<string, SmartPixelShader>();
+	shaderResourceViews = map<string, SmartShaderResourceView>();
+	samplerStates = map<string, SmartSamplerState>();
 }
 
+// Cleans up all remaing items in the manager
 EntityManager::~EntityManager()
 {
-	// Delete all entity instances from the heap
+	// Remove all existing entities
 	for (auto& entity : entities)
 	{
-		delete entity.second;
+		RemoveEntity(entity.first);
 	}
 
-	// Empty the entity map
-	entities.clear();
+	// Remove all existing meshes
+	for (auto& mesh : meshes)
+	{
+		RemoveMesh(mesh.first);
+	}
+
+	// Remove all existing material
+	for (auto& material : materials)
+	{
+		RemoveMaterial(material.first);
+	}
+
+	// Remove all existing vertex shaders
+	for (auto& vertexShader : vertexShaders)
+	{
+		RemoveVertexShader(vertexShader.first);
+	}
+
+	// Remove all existing pixel shaders
+	for (auto& pixelShader : pixelShaders)
+	{
+		RemovePixelShader(pixelShader.first);
+	}
+
+	// Remove all existing shader resource views
+	for (auto& shaderResourceView : shaderResourceViews)
+	{
+		RemoveShaderResourceView(shaderResourceView.first);
+	}
+
+	// Remove all existing sampler states
+	for (auto& samplerState : samplerStates)
+	{
+		RemoveSamplerState(samplerState.first);
+	}
 }
 
-void EntityManager::CreateEntity(string entityName, Mesh* mesh, Material* material)
+void EntityManager::CreateEntity(string entityName, string meshName, string materialName)
 {
-	// create a new entity using the given mesh and material and assign it to the entity map
-	entities[entityName] = new Entity(mesh, material);
+	// Ensure the specfied mesh exists
+	if (meshes.count(meshName) == 0)
+	{
+		throw "The specified mesh: " + meshName + " does not exist.";
+	}
+
+	// Ensure the specfied material exists
+	if (materials.count(materialName) == 0)
+	{
+		throw "The specified material: " + materialName + " does not exist.";
+	}
+
+	// Create a new entity using the given mesh and material and assign it to the entity map
+	entities[entityName] = SmartEntity(
+		new Entity(
+			GetMesh(meshName), 
+			GetMaterial(materialName)
+		), 
+		meshName, 
+		materialName);
 }
 
 void EntityManager::RemoveEntity(string entityName)
 {
-	// Delete the entity instance from the heap
-	delete entities[entityName];
+	// Ensure the specfied entity exists
+	if (entities.count(entityName) == 0)
+	{
+		throw "The specified entity: " + entityName + " does not exist.";
+	}
 
-	// Remove the entity pair from the heap
+	// Decrement the mesh and material reference counts for this entity
+	meshes[entities[entityName].meshName].refCount--;
+	materials[entities[entityName].materialName].refCount--;
+
+	// Delete the entity instance from the heap
+	delete entities[entityName].entity;
+
+	// Remove the entity pair from the map
 	entities.erase(entityName);
 }
 
 Entity* EntityManager::GetEntity(string entityName)
 {
+	// Ensure the specfied entity exists
+	if (entities.count(entityName) == 0)
+	{
+		throw "The specified entity: " + entityName + " does not exist.";
+	}
+
 	// Return the specified entity instance
-	return entities[entityName];
+	return entities[entityName].entity;
 }
 
 void EntityManager::CreateMesh(string meshName, ID3D11Device* device, char* objFile)
 {
+	// Create a new smart mesh using the passed in parameters and assign it to the mesh map
+	meshes[meshName] = SmartMesh(new Mesh(device, objFile), 0);
 }
 
 void EntityManager::RemoveMesh(string meshName)
 {
+	// Ensure the specfied mesh exists
+	if (meshes.count(meshName) == 0)
+	{
+		throw "The specified mesh: " + meshName + " does not exist.";
+	}
+
+	// Ensure that the mesh is not currently being referenced
+	if (meshes[meshName].refCount != 0)
+	{
+		throw "The specified mesh: " + meshName + " is still being referenced in memory and therefore can not be removed.";
+	}
+
+	// Delete the mesh instance from the heap
+	delete meshes[meshName].mesh;
+
+	// Remove the mesh pair from the map
+	meshes.erase(meshName);
 }
 
 Mesh* EntityManager::GetMesh(string meshName)
 {
-	return nullptr;
+	// Ensure the specfied mesh exists
+	if (meshes.count(meshName) == 0)
+	{
+		throw "The specified mesh: " + meshName + " does not exist.";
+	}
+
+	// Increment the reference count for the smart mesh
+	meshes[meshName].refCount++;
+
+	// Return the requested mesh
+	return meshes[meshName].mesh;
 }
 
-void EntityManager::CreateMaterial(string materialName, SimpleVertexShader* vertexShader, SimplePixelShader* pixelShader, ID3D11ShaderResourceView* shaderResourceView, ID3D11SamplerState* samplerState)
+void EntityManager::CreateMaterial(string materialName, string vertexShaderName, string pixelShaderName, string shaderResourceViewName, string samplerStateName)
 {
+	// Ensure the specfied vertex shader exists
+	if (vertexShaders.count(vertexShaderName) == 0)
+	{
+		throw "The specified vertex shader: " + vertexShaderName + " does not exist.";
+	}
+
+	// Ensure the specfied pixel shader exists
+	if (pixelShaders.count(pixelShaderName) == 0)
+	{
+		throw "The specified pixel shader: " + pixelShaderName + " does not exist.";
+	}
+
+	// Ensure the specfied shader resource view exists
+	if (shaderResourceViews.count(shaderResourceViewName) == 0)
+	{
+		throw "The specified shader resource view: " + shaderResourceViewName + " does not exist.";
+	}
+
+	// Ensure the specfied sampler state exists
+	if (samplerStates.count(samplerStateName) == 0)
+	{
+		throw "The specified sampler state: " + samplerStateName + " does not exist.";
+	}
+
+	// Create a new material using the passed in data and assign it to the material map
+	materials[materialName] = SmartMaterial(
+		new Material(
+			GetVertexShader(vertexShaderName),
+			GetPixelShader(pixelShaderName),
+			GetShaderResourceView(shaderResourceViewName),
+			GetSamplerState(samplerStateName)
+		),
+		0);
 }
 
 void EntityManager::RemoveMaterial(string materialName)
 {
+	// Ensure the specfied material exists
+	if (materials.count(materialName) == 0)
+	{
+		throw "The specified material: " + materialName + " does not exist.";
+	}
+
+	// Ensure that the material is not currently being referenced
+	if (materials[materialName].refCount != 0)
+	{
+		throw "The specified material: " + materialName + " is still being referenced in memory and therefore can not be removed.";
+	}
+
+	// Decrement the vertex shader, pixel shader, shader resource view, and sampler state reference counts for this material
+	vertexShaders[materials[materialName].vertexShaderName].refCount--;
+	pixelShaders[materials[materialName].pixelShaderName].refCount--;
+	shaderResourceViews[materials[materialName].shaderResourceViewName].refCount--;
+	samplerStates[materials[materialName].samplerStateName].refCount--;
+
+	// Delete the material instance from the heap
+	delete materials[materialName].material;
+
+	// Remove the material pair from the map
+	materials.erase(materialName);
 }
 
 Material* EntityManager::GetMaterial(string materialName)
 {
-	return nullptr;
+	// Ensure the specfied material exists
+	if (materials.count(materialName) == 0)
+	{
+		throw "The specified material: " + materialName + " does not exist.";
+	}
+
+	// Increment the reference count for the smart material
+	materials[materialName].refCount++;
+
+	// Return the requested material
+	return materials[materialName].material;
 }
 
 void EntityManager::CreateVertexShader(string vertexShaderName, ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR shaderFile)
 {
+	// Create a new vertex shader using the passed in data and assign it to the vertex shader map
+	vertexShaders[vertexShaderName] = SmartVertexShader(new SimpleVertexShader(device, context), 0);
+	vertexShaders[vertexShaderName].vertexShader->LoadShaderFile(shaderFile);
 }
 
 void EntityManager::RemoveVertexShader(string vertexShaderName)
 {
+	// Ensure the specfied vertex shader exists
+	if (vertexShaders.count(vertexShaderName) == 0)
+	{
+		throw "The specified vertex shader: " + vertexShaderName + " does not exist.";
+	}
+
+	// Ensure that the vertex shader is not currently being referenced
+	if (vertexShaders[vertexShaderName].refCount != 0)
+	{
+		throw "The specified vertex shader: " + vertexShaderName + " is still being referenced in memory and therefore can not be removed.";
+	}
+
+	// Delete the vertex shader instance from the heap
+	delete vertexShaders[vertexShaderName].vertexShader;
+
+	// Remove the vertex shader pair from the map
+	vertexShaders.erase(vertexShaderName);
 }
 
-SmartVertexShader* EntityManager::GetVertexShader(string vertexShaderName)
+SimpleVertexShader* EntityManager::GetVertexShader(string vertexShaderName)
 {
-	return nullptr;
+	// Ensure the specfied vertex shader exists
+	if (vertexShaders.count(vertexShaderName) == 0)
+	{
+		throw "The specified vertex shader: " + vertexShaderName + " does not exist.";
+	}
+
+	// Increment the reference count for the smart vertex shader
+	vertexShaders[vertexShaderName].refCount++;
+
+	// Return the requested vertex shader
+	return vertexShaders[vertexShaderName].vertexShader;
 }
 
 void EntityManager::CreatePixelShader(string pixelShaderName, ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR shaderFile)
 {
+	// Create a new pixel shader using the passed in data and assign it to the pixel shader map
+	pixelShaders[pixelShaderName] = SmartPixelShader(new SimplePixelShader(device, context), 0);
+	pixelShaders[pixelShaderName].pixelShader->LoadShaderFile(shaderFile);
 }
 
 void EntityManager::RemovePixelShader(string pixelShaderName)
 {
+	// Ensure the specfied pixel shader exists
+	if (pixelShaders.count(pixelShaderName) == 0)
+	{
+		throw "The specified pixel shader: " + pixelShaderName + " does not exist.";
+	}
+
+	// Ensure that the pixel shader is not currently being referenced
+	if (pixelShaders[pixelShaderName].refCount != 0)
+	{
+		throw "The specified pixel shader: " + pixelShaderName + " is still being referenced in memory and therefore can not be removed.";
+	}
+
+	// Delete the pixel shader instance from the heap
+	delete pixelShaders[pixelShaderName].pixelShader;
+
+	// Remove the pixel shader pair from the map
+	pixelShaders.erase(pixelShaderName);
 }
 
-SmartPixelShader* EntityManager::GetPixelShader(string pixelShaderName)
+SimplePixelShader* EntityManager::GetPixelShader(string pixelShaderName)
 {
-	return nullptr;
+	// Ensure the specfied pixel shader exists
+	if (pixelShaders.count(pixelShaderName) == 0)
+	{
+		throw "The specified pixel shader: " + pixelShaderName + " does not exist.";
+	}
+
+	// Increment the reference count for the smart pixel shader
+	pixelShaders[pixelShaderName].refCount++;
+
+	// Return the requested pixel shader
+	return pixelShaders[pixelShaderName].pixelShader;
 }
 
-void EntityManager::CreateShaderResourceView(string shaderResourceViewName, Mesh* mesh, Material* material)
+void EntityManager::CreateShaderResourceView(string shaderResourceViewName, ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile)
 {
+	// Use the DirectXTK to load a texture from an external file and place it into a shader resource view
+	ID3D11ShaderResourceView* shaderResourceView;
+	CreateWICTextureFromFile(
+		device,										// Application Device
+		context,									// Application Device Context (necesary for auto generation of mipmaps)
+		textureFile,								// File path to external texture
+		0,											// Reference to the texture which we don't need so we pass in 0
+		&shaderResourceView);						// Address to the Shader Resource View pointer which we pass to the shader later
+
+	// Create a new shader resource view using the passed in data and assign it to the shader resource view map
+	shaderResourceViews[shaderResourceViewName] = SmartShaderResourceView(shaderResourceView, 0);
 }
 
 void EntityManager::RemoveShaderResourceView(string shaderResourceViewName)
 {
+	// Ensure the specfied shader resource view exists
+	if (shaderResourceViews.count(shaderResourceViewName) == 0)
+	{
+		throw "The specified shader resource view: " + shaderResourceViewName + " does not exist.";
+	}
+
+	// Ensure that the shader resource view is not currently being referenced
+	if (shaderResourceViews[shaderResourceViewName].refCount != 0)
+	{
+		throw "The specified shader resource view: " + shaderResourceViewName + " is still being referenced in memory and therefore can not be removed.";
+	}
+
+	// Release the shader resource view instance
+	shaderResourceViews[shaderResourceViewName].shaderResourceView->Release();
+
+	// Remove the shader resource view pair from the map
+	shaderResourceViews.erase(shaderResourceViewName);
 }
 
 ID3D11ShaderResourceView* EntityManager::GetShaderResourceView(string shaderResourceViewName)
 {
-	return nullptr;
+	// Ensure the specfied shader resource view exists
+	if (shaderResourceViews.count(shaderResourceViewName) == 0)
+	{
+		throw "The specified shader resource view: " + shaderResourceViewName + " does not exist.";
+	}
+
+	// Increment the reference count for the smart shader resource view
+	shaderResourceViews[shaderResourceViewName].refCount++;
+
+	// Return the requested shader resource view
+	return shaderResourceViews[shaderResourceViewName].shaderResourceView;
 }
 
-void EntityManager::CreateSamplerState(string samplerStateName, Mesh* mesh, Material* material)
+void EntityManager::CreateSamplerState(string samplerStateName, ID3D11Device* device, D3D11_SAMPLER_DESC samplerDesc)
 {
+	// Create the sampler state using the defined sampler description
+	ID3D11SamplerState* samplerState;
+	device->CreateSamplerState(&samplerDesc, &samplerState);
+
+	// Create a new sampler state using the passed in data and assign it to the sampler state map
+	samplerStates[samplerStateName] = SmartSamplerState(samplerState, 0);
 }
 
 void EntityManager::RemoveSamplerState(string samplerStateName)
 {
+	// Ensure the specfied sampler state exists
+	if (samplerStates.count(samplerStateName) == 0)
+	{
+		throw "The specified sampler state: " + samplerStateName + " does not exist.";
+	}
+
+	// Ensure that the sampler state is not currently being referenced
+	if (samplerStates[samplerStateName].refCount != 0)
+	{
+		throw "The specified sampler state: " + samplerStateName + " is still being referenced in memory and therefore can not be removed.";
+	}
+
+	// Release the sampler state instance
+	samplerStates[samplerStateName].samplerState->Release();
+
+	// Remove the sampler state pair from the map
+	samplerStates.erase(samplerStateName);
 }
 
 ID3D11SamplerState* EntityManager::GetSamplerState(string samplerStateName)
 {
-	return nullptr;
+	// Ensure the specfied sampler state exists
+	if (samplerStates.count(samplerStateName) == 0)
+	{
+		throw "The specified sampler state: " + samplerStateName + " does not exist.";
+	}
+
+	// Increment the reference count for the smart sampler state
+	samplerStates[samplerStateName].refCount++;
+
+	// Return the requested sampler state
+	return samplerStates[samplerStateName].samplerState;
 }

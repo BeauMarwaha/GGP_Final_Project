@@ -4,8 +4,18 @@
 #include "Entity.h"
 #include "Mesh.h"
 #include "Material.h"
+#include "WICTextureLoader.h"
 
 #pragma region Smart Structs
+// Struct representing a smart entity
+struct SmartEntity
+{
+	SmartEntity(Entity* entity, std::string meshName, std::string materialName) : entity(entity), meshName(meshName), materialName(materialName) { }
+	Entity* entity; // Entity Pointer
+	std::string meshName; // Name of the mesh this entity utilizes
+	std::string materialName; // Name of the material this entity utilizes
+};
+
 // Struct representing a smart mesh
 struct SmartMesh
 {
@@ -20,6 +30,10 @@ struct SmartMaterial
 	SmartMaterial(Material* material, unsigned int refCount) : material(material), refCount(refCount) { }
 	Material* material; // Material Pointer
 	unsigned int refCount; // Number of references to this material
+	std::string vertexShaderName; // Name of the vertex shader this material utilizes
+	std::string pixelShaderName; // Name of the pixel shader this material utilizes
+	std::string shaderResourceViewName; // Name of the shader resource view this material utilizes
+	std::string samplerStateName; // Name of the sampler state this material utilizes
 };
 
 // Struct representing a smart simple vertex shader
@@ -61,48 +75,68 @@ public:
 	EntityManager(); // Constructor
 	~EntityManager(); // Deconstructor
 
-	#pragma region Helper Methods
+	#pragma region Public Helper Methods
 	// Entity Helper Methods
-	void CreateEntity(std::string entityName, Mesh* mesh, Material* material);
+	void CreateEntity(std::string entityName, std::string meshName, std::string materialName);
 	void RemoveEntity(std::string entityName);
-	Entity* GetEntity(std::string entityName);
 
 	// Mesh Helper Methods
 	void CreateMesh(std::string meshName, ID3D11Device* device, char* objFile);
 	void RemoveMesh(std::string meshName);
-	Mesh* GetMesh(std::string meshName);
 
 	// Material Helper Methods
-	void CreateMaterial(std::string materialName, SimpleVertexShader* vertexShader, SimplePixelShader* pixelShader, ID3D11ShaderResourceView* shaderResourceView, ID3D11SamplerState* samplerState);
+	void CreateMaterial(std::string materialName, std::string vertexShaderName, std::string pixelShaderName, std::string shaderResourceViewName, std::string samplerStateName);
 	void RemoveMaterial(std::string materialName);
-	Material* GetMaterial(std::string materialName);
 
 	// Vertex Shader Helper Methods
 	void CreateVertexShader(std::string vertexShaderName, ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR shaderFile);
 	void RemoveVertexShader(std::string vertexShaderName);
-	SmartVertexShader* GetVertexShader(std::string vertexShaderName);
 
 	// Vertex Shader Helper Methods
 	void CreatePixelShader(std::string pixelShaderName, ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR shaderFile);
 	void RemovePixelShader(std::string pixelShaderName);
-	SmartPixelShader* GetPixelShader(std::string pixelShaderName);
 
 	// Shader Resource View Helper Methods
-	void CreateShaderResourceView(std::string shaderResourceViewName, Mesh* mesh, Material* material);
+	void CreateShaderResourceView(std::string shaderResourceViewName, ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile);
 	void RemoveShaderResourceView(std::string shaderResourceViewName);
-	ID3D11ShaderResourceView* GetShaderResourceView(std::string shaderResourceViewName);
 
 	// Sampler State Helper Methods
-	void CreateSamplerState(std::string samplerStateName, Mesh* mesh, Material* material);
+	void CreateSamplerState(std::string samplerStateName, ID3D11Device* device, D3D11_SAMPLER_DESC samplerDesc);
 	void RemoveSamplerState(std::string samplerStateName);
-	ID3D11SamplerState* GetSamplerState(std::string samplerStateName);
 	#pragma endregion
 
 private:
-	// Map of all entities handled in the manager (Uses entity name for the key)
-	std::map<std::string, Entity*> entities;
+	// Map of all smart entities handled in the manager (Uses entity name for the key)
+	std::map<std::string, SmartEntity> entities;
 
 	// Maps to keep track of entity related objects
-	std::map<std::string, SmartMesh> meshes; // Meshes Map (Uses mesh name for the key)
-	std::map<std::string, SmartMaterial> materials; // Materials Map (Uses material name for the key)
+	std::map<std::string, SmartMesh> meshes; // Smart Meshes Map (Uses mesh name for the key)
+	std::map<std::string, SmartMaterial> materials; // Smart Materials Map (Uses material name for the key)
+	std::map<std::string, SmartVertexShader> vertexShaders; // Smart Vertex Shaders Map (Uses vertex shader name for the key)
+	std::map<std::string, SmartPixelShader> pixelShaders; // Smart Pixel Shaders Map (Uses pixel shader name for the key)
+	std::map<std::string, SmartShaderResourceView> shaderResourceViews; // Smart Shader Resource Views Map (Uses shader resource view name for the key)
+	std::map<std::string, SmartSamplerState> samplerStates; // Smart Sampler States Map (Uses sampler state name for the key)
+
+	#pragma region Private Helper Methods
+	// Entity Helper Methods
+	Entity* GetEntity(std::string entityName);
+
+	// Mesh Helper Methods
+	Mesh* GetMesh(std::string meshName);
+
+	// Material Helper Methods
+	Material* GetMaterial(std::string materialName);
+
+	// Vertex Shader Helper Methods
+	SimpleVertexShader* GetVertexShader(std::string vertexShaderName);
+
+	// Vertex Shader Helper Methods
+	SimplePixelShader* GetPixelShader(std::string pixelShaderName);
+
+	// Shader Resource View Helper Methods
+	ID3D11ShaderResourceView* GetShaderResourceView(std::string shaderResourceViewName);
+
+	// Sampler State Helper Methods
+	ID3D11SamplerState* GetSamplerState(std::string samplerStateName);
+	#pragma endregion
 };
