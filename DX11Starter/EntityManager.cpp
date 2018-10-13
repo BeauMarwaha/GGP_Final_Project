@@ -21,46 +21,95 @@ EntityManager::EntityManager()
 // Cleans up all remaing items in the manager
 EntityManager::~EntityManager()
 {
-	// Remove all existing entities
+	// Create a vector to hold the names of resources to delete
+	vector<string> names = vector<string>();
+
+	// Get all existing entity names
 	for (auto& entity : entities)
-	{
-		RemoveEntity(entity.first);
-	}
+		names.push_back(entity.first);
+	// Remove all existing entities
+	for (std::vector<Entity>::size_type i = 0; i != names.size(); i++)
+		RemoveEntity(names[i]);
+	// Clear the list of names
+	names.clear();
 
-	// Remove all existing meshes
+	// Get all existing mesh names
 	for (auto& mesh : meshes)
-	{
-		RemoveMesh(mesh.first);
-	}
+		names.push_back(mesh.first);
+	// Remove all existing meshes
+	for (std::vector<Entity>::size_type i = 0; i != names.size(); i++)
+		RemoveMesh(names[i]);
+	// Clear the list of names
+	names.clear();
 
-	// Remove all existing material
+	// Get all existing material names
 	for (auto& material : materials)
-	{
-		RemoveMaterial(material.first);
-	}
+		names.push_back(material.first);
+	// Remove all existing materials
+	for (std::vector<Entity>::size_type i = 0; i != names.size(); i++)
+		RemoveMaterial(names[i]);
+	// Clear the list of names
+	names.clear();
 
 	// Remove all existing vertex shaders
 	for (auto& vertexShader : vertexShaders)
-	{
-		RemoveVertexShader(vertexShader.first);
-	}
+		names.push_back(vertexShader.first);
+	// Remove all existing vertex shaders
+	for (std::vector<Entity>::size_type i = 0; i != names.size(); i++)
+		RemoveVertexShader(names[i]);
+	// Clear the list of names
+	names.clear();
 
 	// Remove all existing pixel shaders
 	for (auto& pixelShader : pixelShaders)
-	{
-		RemovePixelShader(pixelShader.first);
-	}
+		names.push_back(pixelShader.first);
+	// Remove all existing pixel shaders
+	for (std::vector<Entity>::size_type i = 0; i != names.size(); i++)
+		RemovePixelShader(names[i]);
+	// Clear the list of names
+	names.clear();
 
 	// Remove all existing shader resource views
 	for (auto& shaderResourceView : shaderResourceViews)
-	{
-		RemoveShaderResourceView(shaderResourceView.first);
-	}
+		names.push_back(shaderResourceView.first);
+	// Remove all existing shader resource views
+	for (std::vector<Entity>::size_type i = 0; i != names.size(); i++)
+		RemoveShaderResourceView(names[i]);
+	// Clear the list of names
+	names.clear();
 
 	// Remove all existing sampler states
 	for (auto& samplerState : samplerStates)
+		names.push_back(samplerState.first);
+	// Remove all existing sampler states
+	for (std::vector<Entity>::size_type i = 0; i != names.size(); i++)
+		RemoveSamplerState(names[i]);
+	// Clear the list of names
+	names.clear();
+}
+
+void EntityManager::UpdateEntities(float deltaTime, float totalTime)
+{
+	// Run the update method on all entities
+	for (auto& entity : entities)
 	{
-		RemoveSamplerState(samplerState.first);
+		entity.second.entity->Update(deltaTime, totalTime);
+	}
+}
+
+void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[])
+{
+	// Draws all entities with lighting
+	for (auto& entity : entities)
+	{
+		// Pass the enviromental lights to the pixel shader
+		SimplePixelShader* pixelShader = pixelShaders[materials[entity.second.materialName].pixelShaderName].pixelShader;
+		pixelShader->SetData(
+			"lights", // The name of the variable in the shader
+			&lights, // The address of the data to copy
+			sizeof(lights)); // The size of the data to copy
+
+		entity.second.entity->Draw(context, camera->GetViewMatrix(), camera->GetProjectionMatrix());
 	}
 }
 
@@ -195,7 +244,11 @@ void EntityManager::CreateMaterial(string materialName, string vertexShaderName,
 			GetShaderResourceView(shaderResourceViewName),
 			GetSamplerState(samplerStateName)
 		),
-		0);
+		0,
+		vertexShaderName,
+		pixelShaderName,
+		shaderResourceViewName,
+		samplerStateName);
 }
 
 void EntityManager::RemoveMaterial(string materialName)

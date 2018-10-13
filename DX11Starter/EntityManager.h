@@ -4,14 +4,19 @@
 #include "Entity.h"
 #include "Mesh.h"
 #include "Material.h"
+#include "Camera.h"
+#include "DirectionalLight.h"
 #include "WICTextureLoader.h"
 
 #pragma region Smart Structs
 // Struct representing a smart entity
 struct SmartEntity
 {
+	// Constructors
 	SmartEntity() { }
 	SmartEntity(Entity* entity, std::string meshName, std::string materialName) : entity(entity), meshName(meshName), materialName(materialName) { }
+
+	// Members
 	Entity* entity; // Entity Pointer
 	std::string meshName; // Name of the mesh this entity utilizes
 	std::string materialName; // Name of the material this entity utilizes
@@ -20,8 +25,11 @@ struct SmartEntity
 // Struct representing a smart mesh
 struct SmartMesh
 {
+	// Constructors
 	SmartMesh() { }
 	SmartMesh(Mesh* mesh, unsigned int refCount) : mesh(mesh), refCount(refCount) { }
+
+	// Members
 	Mesh* mesh; // Mesh Pointer
 	unsigned int refCount; // Number of references to this mesh
 };
@@ -29,8 +37,23 @@ struct SmartMesh
 // Struct representing a smart material
 struct SmartMaterial
 {
+	// Constructors
 	SmartMaterial() { }
-	SmartMaterial(Material* material, unsigned int refCount) : material(material), refCount(refCount) { }
+	SmartMaterial(
+		Material* material, 
+		unsigned int refCount, 
+		std::string vertexShaderName, 
+		std::string pixelShaderName, 
+		std::string shaderResourceViewName, 
+		std::string samplerStateName
+	) :
+		material(material), refCount(refCount), 
+		vertexShaderName(vertexShaderName), 
+		pixelShaderName(pixelShaderName), 
+		shaderResourceViewName(shaderResourceViewName), 
+		samplerStateName(samplerStateName) { }
+
+	// Members
 	Material* material; // Material Pointer
 	unsigned int refCount; // Number of references to this material
 	std::string vertexShaderName; // Name of the vertex shader this material utilizes
@@ -42,8 +65,11 @@ struct SmartMaterial
 // Struct representing a smart simple vertex shader
 struct SmartVertexShader
 {
+	// Constructors
 	SmartVertexShader() { }
 	SmartVertexShader(SimpleVertexShader* vertexShader, unsigned int refCount) : vertexShader(vertexShader), refCount(refCount) { }
+
+	// Members
 	SimpleVertexShader* vertexShader; // Simple Vertex Shader Pointer
 	unsigned int refCount; // Number of references to this material
 };
@@ -51,8 +77,11 @@ struct SmartVertexShader
 // Struct representing a smart simple pixel shader
 struct SmartPixelShader
 {
+	// Constructors
 	SmartPixelShader() { }
 	SmartPixelShader(SimplePixelShader* pixelShader, unsigned int refCount) : pixelShader(pixelShader), refCount(refCount) { }
+
+	// Members
 	SimplePixelShader* pixelShader; // Simple Pixel Shader Pointer
 	unsigned int refCount; // Number of references to this material
 };
@@ -60,8 +89,11 @@ struct SmartPixelShader
 // Struct representing a smart shader resource view
 struct SmartShaderResourceView
 {
+	// Constructors
 	SmartShaderResourceView() { }
 	SmartShaderResourceView(ID3D11ShaderResourceView* shaderResourceView, unsigned int refCount) : shaderResourceView(shaderResourceView), refCount(refCount) { }
+
+	// Members
 	ID3D11ShaderResourceView* shaderResourceView; // DXTK Shader Reource View Pointer
 	unsigned int refCount; // Number of references to this material
 };
@@ -69,8 +101,11 @@ struct SmartShaderResourceView
 // Struct representing a smart sampler state
 struct SmartSamplerState
 {
+	// Constructors
 	SmartSamplerState() { }
 	SmartSamplerState(ID3D11SamplerState* samplerState, unsigned int refCount) : samplerState(samplerState), refCount(refCount) { }
+
+	// Members
 	ID3D11SamplerState* samplerState; // DXTK Shader Reource View Pointer
 	unsigned int refCount; // Number of references to this material
 };
@@ -82,10 +117,17 @@ public:
 	EntityManager(); // Constructor
 	~EntityManager(); // Deconstructor
 
+	// Runs the update method on all entities
+	void UpdateEntities(float deltaTime, float totalTime);
+
+	// Draws all entities with lighting
+	void DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[]);
+
 	#pragma region Public Helper Methods
 	// Entity Helper Methods
 	void CreateEntity(std::string entityName, std::string meshName, std::string materialName);
 	void RemoveEntity(std::string entityName);
+	Entity* GetEntity(std::string entityName);
 
 	// Mesh Helper Methods
 	void CreateMesh(std::string meshName, ID3D11Device* device, char* objFile);
@@ -125,9 +167,6 @@ private:
 	std::map<std::string, SmartSamplerState> samplerStates; // Smart Sampler States Map (Uses sampler state name for the key)
 
 	#pragma region Private Helper Methods
-	// Entity Helper Methods
-	Entity* GetEntity(std::string entityName);
-
 	// Mesh Helper Methods
 	Mesh* GetMesh(std::string meshName);
 

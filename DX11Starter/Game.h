@@ -2,10 +2,9 @@
 
 #include "DXCore.h"
 #include "SimpleShader.h"
-#include "Entity.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
-#include "WICTextureLoader.h"
+#include "EntityManager.h"
 #include <DirectXMath.h>
 #include <vector>
 
@@ -32,29 +31,14 @@ public:
 
 private:
 	// Initialization helper methods
-	void LoadMaterials();
-	void CreateBasicGeometry();
-	void LoadModels();
+	void CreateLights();
+	void CreateEntities();
 
 	// FPS camera
 	Camera* camera;
 
-	// Entity Vector Collection
-	std::vector<Entity> entities;
-
-	// Mesh Pointer Vector Collection
-	std::vector<Mesh*> meshes;
-
-	// Basic Material reference
-	Material* material;
-
-	// Wrappers for DirectX shaders to provide simplified functionality
-	SimpleVertexShader* vertexShader;
-	SimplePixelShader* pixelShader;
-
-	// DXTK Texture resources
-	ID3D11ShaderResourceView* shaderResourceView;
-	ID3D11SamplerState* samplerState;
+	// Entity Manager
+	EntityManager* entityManager;
 
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.
