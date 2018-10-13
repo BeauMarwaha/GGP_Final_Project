@@ -10,6 +10,7 @@
 // Struct representing a smart entity
 struct SmartEntity
 {
+	SmartEntity() { }
 	SmartEntity(Entity* entity, std::string meshName, std::string materialName) : entity(entity), meshName(meshName), materialName(materialName) { }
 	Entity* entity; // Entity Pointer
 	std::string meshName; // Name of the mesh this entity utilizes
@@ -19,6 +20,7 @@ struct SmartEntity
 // Struct representing a smart mesh
 struct SmartMesh
 {
+	SmartMesh() { }
 	SmartMesh(Mesh* mesh, unsigned int refCount) : mesh(mesh), refCount(refCount) { }
 	Mesh* mesh; // Mesh Pointer
 	unsigned int refCount; // Number of references to this mesh
@@ -27,6 +29,7 @@ struct SmartMesh
 // Struct representing a smart material
 struct SmartMaterial
 {
+	SmartMaterial() { }
 	SmartMaterial(Material* material, unsigned int refCount) : material(material), refCount(refCount) { }
 	Material* material; // Material Pointer
 	unsigned int refCount; // Number of references to this material
@@ -39,6 +42,7 @@ struct SmartMaterial
 // Struct representing a smart simple vertex shader
 struct SmartVertexShader
 {
+	SmartVertexShader() { }
 	SmartVertexShader(SimpleVertexShader* vertexShader, unsigned int refCount) : vertexShader(vertexShader), refCount(refCount) { }
 	SimpleVertexShader* vertexShader; // Simple Vertex Shader Pointer
 	unsigned int refCount; // Number of references to this material
@@ -47,6 +51,7 @@ struct SmartVertexShader
 // Struct representing a smart simple pixel shader
 struct SmartPixelShader
 {
+	SmartPixelShader() { }
 	SmartPixelShader(SimplePixelShader* pixelShader, unsigned int refCount) : pixelShader(pixelShader), refCount(refCount) { }
 	SimplePixelShader* pixelShader; // Simple Pixel Shader Pointer
 	unsigned int refCount; // Number of references to this material
@@ -55,6 +60,7 @@ struct SmartPixelShader
 // Struct representing a smart shader resource view
 struct SmartShaderResourceView
 {
+	SmartShaderResourceView() { }
 	SmartShaderResourceView(ID3D11ShaderResourceView* shaderResourceView, unsigned int refCount) : shaderResourceView(shaderResourceView), refCount(refCount) { }
 	ID3D11ShaderResourceView* shaderResourceView; // DXTK Shader Reource View Pointer
 	unsigned int refCount; // Number of references to this material
@@ -63,6 +69,7 @@ struct SmartShaderResourceView
 // Struct representing a smart sampler state
 struct SmartSamplerState
 {
+	SmartSamplerState() { }
 	SmartSamplerState(ID3D11SamplerState* samplerState, unsigned int refCount) : samplerState(samplerState), refCount(refCount) { }
 	ID3D11SamplerState* samplerState; // DXTK Shader Reource View Pointer
 	unsigned int refCount; // Number of references to this material
