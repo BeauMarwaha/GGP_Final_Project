@@ -104,7 +104,8 @@ void Game::CreateEntities()
 	entityManager->CreatePixelShader("Default_Pixel_Shader", device, context, L"PixelShader.cso");
 
 	// Create the rock shader resource view
-	entityManager->CreateShaderResourceView("Rock_Texture", device, context, L"resources/textures/GravelCobble_bc.jpg");
+	entityManager->CreateShaderResourceView("Gravel_Texture", device, context, L"resources/textures/GravelCobble_bc.jpg");
+	entityManager->CreateShaderResourceView("Snow_Texture", device, context, L"resources/textures/Snow_bc.jpg");
 
 	// Define the trilinear filtering sampler description
 	D3D11_SAMPLER_DESC samplerDesc = D3D11_SAMPLER_DESC();
@@ -118,16 +119,26 @@ void Game::CreateEntities()
 	entityManager->CreateSamplerState("Trilinear_Sampler", device, samplerDesc);
 
 	// Create the rock material using the previously set up resources
-	entityManager->CreateMaterial("Rock_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Rock_Texture", "Trilinear_Sampler");
-
+	entityManager->CreateMaterial("Rock_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Gravel_Texture", "Trilinear_Sampler");
+	entityManager->CreateMaterial("Snow_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Snow_Texture", "Trilinear_Sampler");
+	
 	// Load geometry
-	entityManager->CreateMesh("Sphere", device, "resources/models/sphere.obj");
-	entityManager->CreateMesh("Helix", device, "resources/models/helix.obj");
-	entityManager->CreateMesh("Torus", device, "resources/models/torus.obj");
-	entityManager->CreateMesh("Cone", device, "resources/models/cone.obj");
+	entityManager->CreateMesh("Sphere_Mesh", device, "resources/models/sphere.obj");
+	entityManager->CreateMesh("Helix_Mesh", device, "resources/models/helix.obj");
+	entityManager->CreateMesh("Torus_Mesh", device, "resources/models/torus.obj");
+	entityManager->CreateMesh("Cone_Mesh", device, "resources/models/cone.obj");
 
 	// Create entities using the previously set up resources
-	entityManager->CreateEntity("Sphere_01", "Sphere", "Rock_Material");
+	entityManager->CreateEntity("Player", "Sphere_Mesh", "Rock_Material");
+	entityManager->CreateEntity("Helix_01", "Helix_Mesh", "Snow_Material");
+	entityManager->CreateEntity("Cone_01", "Cone_Mesh", "Rock_Material");
+	entityManager->CreateEntity("Torus_01", "Torus_Mesh", "Rock_Material");
+	entityManager->CreateEntity("Torus_02", "Torus_Mesh", "Snow_Material");
+
+	// Set up initial entity positions
+	entityManager->GetEntity("Torus_01")->SetPosition(XMFLOAT3(2, 0, 0));
+	entityManager->GetEntity("Torus_02")->SetPosition(XMFLOAT3(-2, 0, 0));
+	entityManager->GetEntity("Cone_01")->SetPosition(XMFLOAT3(0, 2, 0));
 }
 
 // --------------------------------------------------------
@@ -152,9 +163,9 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
-	/*
+	
 	// Movement for entity Helix_01
-	Entity* player = entityManager->GetEntity("Sphere_01");
+	Entity* player = entityManager->GetEntity("Player");
 	if (&player != nullptr)
 	{
 		// Set movement rate
@@ -191,12 +202,14 @@ void Game::Update(float deltaTime, float totalTime)
 		}
 	}
 
-	// Rotate entity 1, 4, and 5
-	XMFLOAT3 currentRot = entities[1].GetRotation();
+	
+	// Rotate the torus entities
+	Entity* torus1 = entityManager->GetEntity("Torus_01");
+	Entity* torus2 = entityManager->GetEntity("Torus_02");
+	XMFLOAT3 currentRot = torus1->GetRotation();
 	XMFLOAT3 newRot = XMFLOAT3(currentRot.x, currentRot.y, currentRot.z + (1 * deltaTime));
-	entities[1].SetRotation(newRot);
-	entities[4].SetRotation(newRot);
-	entities[5].SetRotation(newRot);
+	torus1->SetRotation(newRot);
+	torus2->SetRotation(newRot);
 
 	// Set up the rate of LERP to pulse up and down each second
 	float rate = 0.5f;
@@ -209,14 +222,13 @@ void Game::Update(float deltaTime, float totalTime)
 		rate = 1 - (totalTime - (long)totalTime);
 	}
 
-	// Lerp the scale of entity 2 and 3
+	// Lerp the scale of the helix entity
+	Entity* helix = entityManager->GetEntity("Helix_01");
 	XMFLOAT3 scale = XMFLOAT3(1.0, 1.0, 1.0);
 	XMFLOAT3 scaleMin = XMFLOAT3(0.75, 0.75, 0.75);
 	XMFLOAT3 scaleMax = XMFLOAT3(1.25, 1.25, 1.25);
 	XMStoreFloat3(&scale, XMVectorLerp(XMLoadFloat3(&scaleMin), XMLoadFloat3(&scaleMax), rate));
-	entities[2].SetScale(scale);
-	entities[3].SetScale(scale);
-	*/
+	helix->SetScale(scale);
 
 	// Update the camera
 	camera->Update(deltaTime, totalTime);
@@ -244,7 +256,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		0);
 
 	// Draw each entity with lighting
-	entityManager->DrawEntities(context, camera, lights);
+	entityManager->DrawEntities(context, camera, lights, _countof(lights));
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it

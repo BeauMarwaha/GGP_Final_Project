@@ -51,7 +51,7 @@ EntityManager::~EntityManager()
 	// Clear the list of names
 	names.clear();
 
-	// Remove all existing vertex shaders
+	// Get all existing vertex shader names
 	for (auto& vertexShader : vertexShaders)
 		names.push_back(vertexShader.first);
 	// Remove all existing vertex shaders
@@ -60,7 +60,7 @@ EntityManager::~EntityManager()
 	// Clear the list of names
 	names.clear();
 
-	// Remove all existing pixel shaders
+	// Get all existing pixel shader names
 	for (auto& pixelShader : pixelShaders)
 		names.push_back(pixelShader.first);
 	// Remove all existing pixel shaders
@@ -69,7 +69,7 @@ EntityManager::~EntityManager()
 	// Clear the list of names
 	names.clear();
 
-	// Remove all existing shader resource views
+	// Get all existing shader resource view names
 	for (auto& shaderResourceView : shaderResourceViews)
 		names.push_back(shaderResourceView.first);
 	// Remove all existing shader resource views
@@ -78,7 +78,7 @@ EntityManager::~EntityManager()
 	// Clear the list of names
 	names.clear();
 
-	// Remove all existing sampler states
+	// Get all existing sampler state names
 	for (auto& samplerState : samplerStates)
 		names.push_back(samplerState.first);
 	// Remove all existing sampler states
@@ -97,7 +97,7 @@ void EntityManager::UpdateEntities(float deltaTime, float totalTime)
 	}
 }
 
-void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[])
+void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[], int lightCount)
 {
 	// Draws all entities with lighting
 	for (auto& entity : entities)
@@ -106,9 +106,10 @@ void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, D
 		SimplePixelShader* pixelShader = pixelShaders[materials[entity.second.materialName].pixelShaderName].pixelShader;
 		pixelShader->SetData(
 			"lights", // The name of the variable in the shader
-			&lights, // The address of the data to copy
-			sizeof(lights)); // The size of the data to copy
+			lights, // The address of the data to copy
+			sizeof(DirectionalLight) * lightCount); // The size of the data to copy
 
+		// Draw the entity
 		entity.second.entity->Draw(context, camera->GetViewMatrix(), camera->GetProjectionMatrix());
 	}
 }
