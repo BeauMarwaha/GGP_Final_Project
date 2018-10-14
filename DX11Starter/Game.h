@@ -2,10 +2,9 @@
 
 #include "DXCore.h"
 #include "SimpleShader.h"
-#include "Entity.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
-#include "WICTextureLoader.h"
+#include "EntityManager.h"
 #include <DirectXMath.h>
 #include <vector>
 
@@ -31,30 +30,15 @@ public:
 	void OnMouseWheel(float wheelDelta,   int x, int y);
 
 private:
-	// Initialization helper methods - feel free to customize, combine, etc.
-	void LoadMaterials();
-	void CreateBasicGeometry();
-	void LoadModels();
-
-	// Entity Vector Collection
-	std::vector<Entity> entities;
-
-	// Mesh Pointer Vector Collection
-	std::vector<Mesh*> meshes;
+	// Initialization helper methods
+	void CreateLights();
+	void CreateEntities();
 
 	// FPS camera
 	Camera* camera;
 
-	// Wrappers for DirectX shaders to provide simplified functionality
-	SimpleVertexShader* vertexShader;
-	SimplePixelShader* pixelShader;
-
-	// DXTK Texture resources
-	ID3D11ShaderResourceView* shaderResourceView;
-	ID3D11SamplerState* samplerState;
-
-	// Basic Material reference
-	Material* material;
+	// Entity Manager
+	EntityManager* entityManager;
 
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.
