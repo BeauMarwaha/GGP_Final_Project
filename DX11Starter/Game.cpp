@@ -111,8 +111,8 @@ void Game::CreateEntities()
 	entityManager->CreateShaderResourceView("Cliff_Texture", device, context, L"resources/textures/CliffLayered_bc.tif");
 	entityManager->CreateShaderResourceView("Cliff_Normal_Texture", device, context, L"resources/textures/CliffLayered_normal.tif");
 
-	// Define the trilinear filtering sampler description
-	D3D11_SAMPLER_DESC samplerDesc = D3D11_SAMPLER_DESC();
+	// Define the anisotropic filtering sampler description
+	D3D11_SAMPLER_DESC samplerDesc = {}; // Zero out all values initially
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the U axis
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the V axis
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the W axis
@@ -120,7 +120,7 @@ void Game::CreateEntities()
 	samplerDesc.MaxAnisotropy = 16; // Use x16 anisotropy
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX; // This value needs to be higher than 0 for mipmapping to work
 
-	// Create the trilinear filtering sampler state
+	// Create the anisotropic filtering sampler state
 	entityManager->CreateSamplerState("Anisotropic_Sampler", device, samplerDesc);
 
 	// Create the rock material using the previously set up resources
