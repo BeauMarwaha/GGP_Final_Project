@@ -97,30 +97,37 @@ void Game::CreateLights()
 // --------------------------------------------------------
 void Game::CreateEntities()
 {
-	// Create the default vertex shader
+	// Create the vertex shaders
 	entityManager->CreateVertexShader("Default_Vertex_Shader", device, context, L"VertexShader.cso");
+	entityManager->CreateVertexShader("Normals_Vertex_Shader", device, context, L"VertexShaderNormals.cso");
 
-	// Create the default pixel shader
+	// Create the pixel shaders
 	entityManager->CreatePixelShader("Default_Pixel_Shader", device, context, L"PixelShader.cso");
+	entityManager->CreatePixelShader("Normals_Pixel_Shader", device, context, L"PixelShaderNormals.cso");
 
 	// Create the rock shader resource view
 	entityManager->CreateShaderResourceView("Gravel_Texture", device, context, L"resources/textures/GravelCobble_bc.jpg");
 	entityManager->CreateShaderResourceView("Snow_Texture", device, context, L"resources/textures/Snow_bc.jpg");
+	entityManager->CreateShaderResourceView("Cliff_Texture", device, context, L"resources/textures/CliffLayered_bc.tif");
+	entityManager->CreateShaderResourceView("Cliff_Normal_Texture", device, context, L"resources/textures/CliffLayered_normal.tif");
 
 	// Define the trilinear filtering sampler description
 	D3D11_SAMPLER_DESC samplerDesc = D3D11_SAMPLER_DESC();
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the U axis
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the V axis
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the W axis
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; // Use trilinear filtering
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC; // Use Anisotropic filtering
+	samplerDesc.MaxAnisotropy = 16; // Use x16 anisotropy
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX; // This value needs to be higher than 0 for mipmapping to work
 
 	// Create the trilinear filtering sampler state
-	entityManager->CreateSamplerState("Trilinear_Sampler", device, samplerDesc);
+	entityManager->CreateSamplerState("Anisotropic_Sampler", device, samplerDesc);
 
 	// Create the rock material using the previously set up resources
-	entityManager->CreateMaterial("Rock_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Gravel_Texture", "Trilinear_Sampler");
-	entityManager->CreateMaterial("Snow_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Snow_Texture", "Trilinear_Sampler");
+	entityManager->CreateMaterialWithNormal("Cliff_Normal_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "Cliff_Texture", "Cliff_Normal_Texture", "Anisotropic_Sampler");
+	entityManager->CreateMaterial("Cliff_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Cliff_Texture", "Anisotropic_Sampler");
+	entityManager->CreateMaterial("Rock_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Gravel_Texture", "Anisotropic_Sampler");
+	entityManager->CreateMaterial("Snow_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Snow_Texture", "Anisotropic_Sampler");
 	
 	// Load geometry
 	entityManager->CreateMesh("Sphere_Mesh", device, "resources/models/sphere.obj");
@@ -129,13 +136,17 @@ void Game::CreateEntities()
 	entityManager->CreateMesh("Cone_Mesh", device, "resources/models/cone.obj");
 
 	// Create entities using the previously set up resources
-	entityManager->CreateEntity("Player", "Sphere_Mesh", "Rock_Material");
+	entityManager->CreateEntity("Player", "Sphere_Mesh", "Cliff_Normal_Material");
+	entityManager->CreateEntity("Sphere_01", "Sphere_Mesh", "Cliff_Material");
+	entityManager->CreateEntity("Sphere_02", "Sphere_Mesh", "Cliff_Normal_Material");
 	entityManager->CreateEntity("Helix_01", "Helix_Mesh", "Snow_Material");
 	entityManager->CreateEntity("Cone_01", "Cone_Mesh", "Rock_Material");
 	entityManager->CreateEntity("Torus_01", "Torus_Mesh", "Rock_Material");
 	entityManager->CreateEntity("Torus_02", "Torus_Mesh", "Snow_Material");
 
 	// Set up initial entity positions
+	entityManager->GetEntity("Sphere_01")->SetPosition(XMFLOAT3(1, -2.5, 0));
+	entityManager->GetEntity("Sphere_02")->SetPosition(XMFLOAT3(-1, -2.5, 0));
 	entityManager->GetEntity("Torus_01")->SetPosition(XMFLOAT3(2, 0, 0));
 	entityManager->GetEntity("Torus_02")->SetPosition(XMFLOAT3(-2, 0, 0));
 	entityManager->GetEntity("Cone_01")->SetPosition(XMFLOAT3(0, 2, 0));
@@ -202,7 +213,6 @@ void Game::Update(float deltaTime, float totalTime)
 		}
 	}
 
-	
 	// Rotate the torus entities
 	Entity* torus1 = entityManager->GetEntity("Torus_01");
 	Entity* torus2 = entityManager->GetEntity("Torus_02");

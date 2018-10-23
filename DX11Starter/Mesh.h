@@ -28,6 +28,7 @@ public:
 private:
 	// Helper methods
 	void Setup(ID3D11Device* device, Vertex* vertices, int vertexCount, unsigned int* indices, int indexCount);
+	void CalculateTangents(Vertex* vertices, int vertexCount, unsigned int* indices, int indexCount);
 
 	// Buffers to hold actual geometry data
 	ID3D11Buffer* vertexBuffer = nullptr;

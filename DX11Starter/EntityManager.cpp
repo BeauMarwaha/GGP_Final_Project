@@ -211,7 +211,7 @@ Mesh* EntityManager::GetMesh(string meshName)
 	return meshes[meshName].mesh;
 }
 
-void EntityManager::CreateMaterial(string materialName, string vertexShaderName, string pixelShaderName, string shaderResourceViewName, string samplerStateName)
+void EntityManager::CreateMaterial(string materialName, string vertexShaderName, string pixelShaderName, string shaderResourceViewBaseColorName, string samplerStateName)
 {
 	// Ensure the specfied vertex shader exists
 	if (vertexShaders.count(vertexShaderName) == 0)
@@ -226,9 +226,9 @@ void EntityManager::CreateMaterial(string materialName, string vertexShaderName,
 	}
 
 	// Ensure the specfied shader resource view exists
-	if (shaderResourceViews.count(shaderResourceViewName) == 0)
+	if (shaderResourceViews.count(shaderResourceViewBaseColorName) == 0)
 	{
-		throw "The specified shader resource view: " + shaderResourceViewName + " does not exist.";
+		throw "The specified shader resource view base color: " + shaderResourceViewBaseColorName + " does not exist.";
 	}
 
 	// Ensure the specfied sampler state exists
@@ -242,13 +242,58 @@ void EntityManager::CreateMaterial(string materialName, string vertexShaderName,
 		new Material(
 			GetVertexShader(vertexShaderName),
 			GetPixelShader(pixelShaderName),
-			GetShaderResourceView(shaderResourceViewName),
+			GetShaderResourceView(shaderResourceViewBaseColorName),
+			nullptr,
 			GetSamplerState(samplerStateName)
 		),
 		0,
 		vertexShaderName,
 		pixelShaderName,
-		shaderResourceViewName,
+		shaderResourceViewBaseColorName,
+		"NO_NORMAL",
+		samplerStateName);
+}
+
+void EntityManager::CreateMaterialWithNormal(string materialName, string vertexShaderName, string pixelShaderName, std::string shaderResourceViewBaseColorName, std::string shaderResourceViewNormalName, string samplerStateName)
+{
+	// Ensure the specfied vertex shader exists
+	if (vertexShaders.count(vertexShaderName) == 0)
+	{
+		throw "The specified vertex shader: " + vertexShaderName + " does not exist.";
+	}
+
+	// Ensure the specfied pixel shader exists
+	if (pixelShaders.count(pixelShaderName) == 0)
+	{
+		throw "The specified pixel shader: " + pixelShaderName + " does not exist.";
+	}
+
+	// Ensure the specfied shader resource view base color exists
+	if (shaderResourceViews.count(shaderResourceViewBaseColorName) == 0)
+	{
+		throw "The specified shader resource view base color: " + shaderResourceViewBaseColorName + " does not exist.";
+	}
+
+	// Ensure the specfied sampler state exists
+	if (samplerStates.count(samplerStateName) == 0)
+	{
+		throw "The specified sampler state: " + samplerStateName + " does not exist.";
+	}
+
+	// Create a new material using the passed in data and assign it to the material map
+	materials[materialName] = SmartMaterial(
+		new Material(
+			GetVertexShader(vertexShaderName),
+			GetPixelShader(pixelShaderName),
+			GetShaderResourceView(shaderResourceViewBaseColorName),
+			GetShaderResourceView(shaderResourceViewNormalName),
+			GetSamplerState(samplerStateName)
+		),
+		0,
+		vertexShaderName,
+		pixelShaderName,
+		shaderResourceViewBaseColorName,
+		shaderResourceViewNormalName,
 		samplerStateName);
 }
 
@@ -269,7 +314,8 @@ void EntityManager::RemoveMaterial(string materialName)
 	// Decrement the vertex shader, pixel shader, shader resource view, and sampler state reference counts for this material
 	vertexShaders[materials[materialName].vertexShaderName].refCount--;
 	pixelShaders[materials[materialName].pixelShaderName].refCount--;
-	shaderResourceViews[materials[materialName].shaderResourceViewName].refCount--;
+	shaderResourceViews[materials[materialName].shaderResourceViewBaseColorName].refCount--;
+	shaderResourceViews[materials[materialName].shaderResourceViewNormalName].refCount--;
 	samplerStates[materials[materialName].samplerStateName].refCount--;
 
 	// Delete the material instance from the heap
@@ -397,6 +443,13 @@ void EntityManager::CreateShaderResourceView(string shaderResourceViewName, ID3D
 
 void EntityManager::RemoveShaderResourceView(string shaderResourceViewName)
 {
+	// Check to see if the shader resource view we are trying to remove is actually a non-existant normal map
+	if (shaderResourceViewName == "NO_NORMAL")
+	{
+		// If so there is no memory allocated for this normal map so we need not do anything else
+		return;
+	}
+
 	// Ensure the specfied shader resource view exists
 	if (shaderResourceViews.count(shaderResourceViewName) == 0)
 	{
