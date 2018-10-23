@@ -44,13 +44,15 @@ struct SmartMaterial
 		unsigned int refCount, 
 		std::string vertexShaderName, 
 		std::string pixelShaderName, 
-		std::string shaderResourceViewName, 
+		std::string shaderResourceViewBaseColorName,
+		std::string shaderResourceViewNormalName,
 		std::string samplerStateName
 	) :
 		material(material), refCount(refCount), 
 		vertexShaderName(vertexShaderName), 
 		pixelShaderName(pixelShaderName), 
-		shaderResourceViewName(shaderResourceViewName), 
+		shaderResourceViewBaseColorName(shaderResourceViewBaseColorName),
+		shaderResourceViewNormalName(shaderResourceViewNormalName),
 		samplerStateName(samplerStateName) { }
 
 	// Members
@@ -58,7 +60,8 @@ struct SmartMaterial
 	unsigned int refCount; // Number of references to this material
 	std::string vertexShaderName; // Name of the vertex shader this material utilizes
 	std::string pixelShaderName; // Name of the pixel shader this material utilizes
-	std::string shaderResourceViewName; // Name of the shader resource view this material utilizes
+	std::string shaderResourceViewBaseColorName; // Name of the shader resource view base color this material utilizes
+	std::string shaderResourceViewNormalName; // Name of the shader resource view normal this material utilizes
 	std::string samplerStateName; // Name of the sampler state this material utilizes
 };
 
@@ -134,7 +137,8 @@ public:
 	void RemoveMesh(std::string meshName);
 
 	// Material Helper Methods
-	void CreateMaterial(std::string materialName, std::string vertexShaderName, std::string pixelShaderName, std::string shaderResourceViewName, std::string samplerStateName);
+	void CreateMaterial(std::string materialName, std::string vertexShaderName, std::string pixelShaderName, std::string shaderResourceViewBaseColorName, std::string samplerStateName);
+	void CreateMaterialWithNormal(std::string materialName, std::string vertexShaderName, std::string pixelShaderName, std::string shaderResourceViewBaseColorName, std::string shaderResourceViewNormalName, std::string samplerStateName);
 	void RemoveMaterial(std::string materialName);
 
 	// Vertex Shader Helper Methods

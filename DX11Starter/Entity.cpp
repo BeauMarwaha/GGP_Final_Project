@@ -167,7 +167,13 @@ void Entity::PrepareMaterial(XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix)
 
 	// Send the texture information to the pixel shader
 	material->GetPixelShader()->SetSamplerState("samplerState", material->GetSamplerState());
-	material->GetPixelShader()->SetShaderResourceView("textureBaseColor", material->GetShaderResourceView());
+	material->GetPixelShader()->SetShaderResourceView("textureBaseColor", material->GetShaderResourceViewBaseColor());
+
+	// Ensure that the normal texture exists before sending it over to the pixel shader
+	if (material->GetShaderResourceViewNormal() != nullptr)
+	{
+		material->GetPixelShader()->SetShaderResourceView("textureNormal", material->GetShaderResourceViewNormal());
+	}
 
 	// Once you've set all of the data you care to change for
 	// the next draw call, you need to actually send it to the GPU
