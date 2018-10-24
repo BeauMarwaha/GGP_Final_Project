@@ -25,6 +25,9 @@ Game::Game(HINSTANCE hInstance)
 	camera = new Camera(width, height);
 	entityManager = new EntityManager();
 
+	// Set the game state to the debug scene
+	state = GameState::Debug;
+
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
 	CreateConsoleWindow(500, 120, 32, 120);
@@ -53,9 +56,18 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
-	// Helper methods for initialization
-	CreateLights();
-	CreateEntities();
+	// Helper methods for initialization based on game state
+	switch (state)
+	{
+	case GameState::Debug:
+		CreateDebugLights();
+		CreateDebugEntities();
+		break;
+	case GameState::Game:
+		CreateLights();
+		CreateEntities();
+		break;
+	}
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
@@ -98,6 +110,72 @@ void Game::CreateLights()
 void Game::CreateEntities()
 {
 	// Create the vertex shaders
+	entityManager->CreateVertexShader("Normals_Vertex_Shader", device, context, L"VertexShaderNormals.cso");
+
+	// Create the pixel shaders
+	entityManager->CreatePixelShader("Normals_Pixel_Shader", device, context, L"PixelShaderNormals.cso");
+
+	// Create the rock shader resource view
+	entityManager->CreateShaderResourceView("Cliff_Texture", device, context, L"resources/textures/CliffLayered_bc.tif");
+	entityManager->CreateShaderResourceView("Cliff_Normal_Texture", device, context, L"resources/textures/CliffLayered_normal.tif");
+
+	// Define the anisotropic filtering sampler description
+	D3D11_SAMPLER_DESC samplerDesc = {}; // Zero out all values initially
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the U axis
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the V axis
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the W axis
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC; // Use Anisotropic filtering
+	samplerDesc.MaxAnisotropy = 16; // Use x16 anisotropy
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX; // This value needs to be higher than 0 for mipmapping to work
+
+	// Create the anisotropic filtering sampler state
+	entityManager->CreateSamplerState("Anisotropic_Sampler", device, samplerDesc);
+
+	// Create the rock material using the previously set up resources
+	entityManager->CreateMaterialWithNormal("Cliff_Normal_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "Cliff_Texture", "Cliff_Normal_Texture", "Anisotropic_Sampler");
+	
+	// Load geometry
+	entityManager->CreateMesh("Sphere_Mesh", device, "resources/models/sphere.obj");
+
+	// Create entities using the previously set up resources
+	entityManager->CreateEntity("Player", "Sphere_Mesh", "Cliff_Normal_Material");
+}
+
+// --------------------------------------------------------
+// Sets up all light sources for the debug scene
+// --------------------------------------------------------
+void Game::CreateDebugLights()
+{
+	// Set up the directional light sources
+	lights[0].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
+	lights[0].DiffuseColor = XMFLOAT4(0, 0, 1, 1);
+	lights[0].Direction = XMFLOAT3(1, -1, 0);
+	lights[1].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
+	lights[1].DiffuseColor = XMFLOAT4(0, 1, 0, 1);
+	lights[1].Direction = XMFLOAT3(-1, 1, 0);
+	lights[2].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
+	lights[2].DiffuseColor = XMFLOAT4(1, 0, 0, 1);
+	lights[2].Direction = XMFLOAT3(-1, -1, 0);
+	lights[3].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
+	lights[3].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
+	lights[3].Direction = XMFLOAT3(1, 1, 0);
+}
+
+// --------------------------------------------------------
+// Sets up entities in the entity manager for the debig scene, this includes:
+// - Creates basic materials to be used in engine, this includes:
+//   - Loading shaders from compiled shader object (.cso) files using
+//     my SimpleShader wrapper for DirectX shader manipulation
+//     - SimpleShader provides helpful methods for sending
+//       data to individual variables on the GPU
+//   - Using DirectXTK to load a texture from an external file
+//   - And creating a sampler description which specifies how the 
+//     material should sample from the loaded texture
+// - Loads the geometry we're going to draw from external files
+// --------------------------------------------------------
+void Game::CreateDebugEntities()
+{
+	// Create the vertex shaders
 	entityManager->CreateVertexShader("Default_Vertex_Shader", device, context, L"VertexShader.cso");
 	entityManager->CreateVertexShader("Normals_Vertex_Shader", device, context, L"VertexShaderNormals.cso");
 
@@ -128,7 +206,7 @@ void Game::CreateEntities()
 	entityManager->CreateMaterial("Cliff_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Cliff_Texture", "Anisotropic_Sampler");
 	entityManager->CreateMaterial("Rock_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Gravel_Texture", "Anisotropic_Sampler");
 	entityManager->CreateMaterial("Snow_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Snow_Texture", "Anisotropic_Sampler");
-	
+
 	// Load geometry
 	entityManager->CreateMesh("Sphere_Mesh", device, "resources/models/sphere.obj");
 	entityManager->CreateMesh("Helix_Mesh", device, "resources/models/helix.obj");
@@ -153,19 +231,6 @@ void Game::CreateEntities()
 }
 
 // --------------------------------------------------------
-// Handle resizing DirectX "stuff" to match the new window size.
-// For instance, updating our projection matrix's aspect ratio.
-// --------------------------------------------------------
-void Game::OnResize()
-{
-	// Handle base-level DX resize stuff
-	DXCore::OnResize();
-
-	// Update our camera's projection matrix since the window size changed
-	camera->ResizeWindow(width, height);
-}
-
-// --------------------------------------------------------
 // Update your game here - user input, move objects, AI, etc.
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
@@ -174,8 +239,68 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
-	
-	// Movement for entity Helix_01
+	// Update the game based on the current game state
+	switch (state)
+	{
+	case GameState::Debug:
+		DebugUpdate(deltaTime, totalTime);
+		break;
+	case GameState::Game:
+		GameUpdate(deltaTime, totalTime);
+		break;
+	}
+
+	// Update the camera
+	camera->Update(deltaTime, totalTime);
+
+	// Update all entities
+	entityManager->UpdateEntities(deltaTime, totalTime);
+}
+
+void Game::GameUpdate(float deltaTime, float totalTime)
+{
+	// Movement for the player entity
+	Entity* player = entityManager->GetEntity("Player");
+	if (&player != nullptr)
+	{
+		// Set movement rate
+		float speed = 5.0;
+
+		if (GetAsyncKeyState('I') & 0x8000)
+		{
+			player->MoveForward(XMFLOAT3(0, speed * deltaTime, 0));
+		}
+
+		if (GetAsyncKeyState('K') & 0x8000)
+		{
+			player->MoveForward(XMFLOAT3(0, -speed * deltaTime, 0));
+		}
+
+		if (GetAsyncKeyState('L') & 0x8000)
+		{
+			player->MoveForward(XMFLOAT3(speed * deltaTime, 0, 0));
+		}
+
+		if (GetAsyncKeyState('J') & 0x8000)
+		{
+			player->MoveForward(XMFLOAT3(-speed * deltaTime, 0, 0));
+		}
+
+		if (GetAsyncKeyState('O') & 0x8000)
+		{
+			player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime));
+		}
+
+		if (GetAsyncKeyState('U') & 0x8000)
+		{
+			player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime));
+		}
+	}
+}
+
+void Game::DebugUpdate(float deltaTime, float totalTime)
+{
+	// Movement for the player entity
 	Entity* player = entityManager->GetEntity("Player");
 	if (&player != nullptr)
 	{
@@ -239,12 +364,19 @@ void Game::Update(float deltaTime, float totalTime)
 	XMFLOAT3 scaleMax = XMFLOAT3(1.25, 1.25, 1.25);
 	XMStoreFloat3(&scale, XMVectorLerp(XMLoadFloat3(&scaleMin), XMLoadFloat3(&scaleMax), rate));
 	helix->SetScale(scale);
+}
 
-	// Update the camera
-	camera->Update(deltaTime, totalTime);
+// --------------------------------------------------------
+// Handle resizing DirectX "stuff" to match the new window size.
+// For instance, updating our projection matrix's aspect ratio.
+// --------------------------------------------------------
+void Game::OnResize()
+{
+	// Handle base-level DX resize stuff
+	DXCore::OnResize();
 
-	// Update all entities
-	entityManager->UpdateEntities(deltaTime, totalTime);
+	// Update our camera's projection matrix since the window size changed
+	camera->ResizeWindow(width, height);
 }
 
 // --------------------------------------------------------

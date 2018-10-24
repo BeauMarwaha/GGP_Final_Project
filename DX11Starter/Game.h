@@ -8,10 +8,15 @@
 #include <DirectXMath.h>
 #include <vector>
 
+enum class GameState
+{
+	Debug = 1,
+	Game = 2
+};
+
 class Game 
 	: public DXCore
 {
-
 public:
 	Game(HINSTANCE hInstance);
 	~Game();
@@ -30,9 +35,20 @@ public:
 	void OnMouseWheel(float wheelDelta,   int x, int y);
 
 private:
+	// Current Game State
+	GameState state;
+
 	// Initialization helper methods
 	void CreateLights();
 	void CreateEntities();
+
+	// Initialization Debug helper methods
+	void CreateDebugLights();
+	void CreateDebugEntities();
+
+	// Update methods unique to game states
+	void GameUpdate(float deltaTime, float totalTime);
+	void DebugUpdate(float deltaTime, float totalTime);
 
 	// FPS camera
 	Camera* camera;
