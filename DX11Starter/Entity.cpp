@@ -14,6 +14,10 @@ Entity::Entity(Mesh* mesh, Material* material)
 	rotation = XMFLOAT3(0, 0, 0);
 	scale = XMFLOAT3(1, 1, 1);
 	worldMatrix = GetIdentityMatrix();
+
+	// Assign the default collider from the mesh to the entity
+	collider = mesh->GetCollider();
+	
 }
 
 Entity::Entity(Entity const & other)
@@ -23,6 +27,7 @@ Entity::Entity(Entity const & other)
 	position = other.position;
 	rotation = other.rotation;
 	scale = other.scale;
+	collider = other.collider;
 	worldMatrix = other.worldMatrix;
 }
 
@@ -97,6 +102,7 @@ void Entity::SetRotation(XMFLOAT3 rotation)
 void Entity::SetScale(XMFLOAT3 scale)
 {
 	this->scale = scale;
+	// TODO: scale our entities collider by the scale
 }
 
 void Entity::SetMesh(Mesh* mesh)

@@ -217,6 +217,7 @@ void Game::CreateDebugEntities()
 	entityManager->CreateEntity("Player", "Sphere_Mesh", "Cliff_Normal_Material");
 	entityManager->CreateEntity("Sphere_01", "Sphere_Mesh", "Cliff_Material");
 	entityManager->CreateEntity("Sphere_02", "Sphere_Mesh", "Cliff_Normal_Material");
+	entityManager->CreateEntity("Sphere_03", "Sphere_Mesh", "Cliff_Normal_Material");
 	entityManager->CreateEntity("Helix_01", "Helix_Mesh", "Snow_Material");
 	entityManager->CreateEntity("Cone_01", "Cone_Mesh", "Rock_Material");
 	entityManager->CreateEntity("Torus_01", "Torus_Mesh", "Rock_Material");
@@ -225,6 +226,7 @@ void Game::CreateDebugEntities()
 	// Set up initial entity positions
 	entityManager->GetEntity("Sphere_01")->SetPosition(XMFLOAT3(1, -2.5, 0));
 	entityManager->GetEntity("Sphere_02")->SetPosition(XMFLOAT3(-1, -2.5, 0));
+	entityManager->GetEntity("Sphere_03")->SetPosition(XMFLOAT3(-3, 0, 0));
 	entityManager->GetEntity("Torus_01")->SetPosition(XMFLOAT3(2, 0, 0));
 	entityManager->GetEntity("Torus_02")->SetPosition(XMFLOAT3(-2, 0, 0));
 	entityManager->GetEntity("Cone_01")->SetPosition(XMFLOAT3(0, 2, 0));

@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include "Vertex.h"
+#include "Collider.h"
 
 // --------------------------------------------------------
 // A Mesh class that can take vertex and index data for a 
@@ -23,6 +24,7 @@ public:
 	// GET methods
 	ID3D11Buffer* GetVertexBuffer();
 	ID3D11Buffer* GetIndexBuffer();
+	Collider GetCollider();
 	int GetIndexCount();
 
 private:
@@ -36,5 +38,8 @@ private:
 
 	// Integer specifying how many indices are in the mesh's index buffer
 	int indexCount = 0;
+
+	// A collider for the base geometry of the mesh
+	Collider collider;
 };
 

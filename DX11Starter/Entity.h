@@ -3,6 +3,7 @@
 #include <DirectXMath.h>
 #include "Mesh.h"
 #include "Material.h"
+#include "Collider.h"
 
 // --------------------------------------------------------
 // A Entity class that represents a singular game object
@@ -55,5 +56,8 @@ private:
 
 	// Entity Material
 	Material* material;
+
+	// Entity Collider
+	Collider collider;
 };
 
