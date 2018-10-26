@@ -224,7 +224,7 @@ ID3D11Buffer* Mesh::GetIndexBuffer()
 	return indexBuffer;
 }
 
-Collider Mesh::GetCollider()
+Collider Mesh::GetCollider(ColliderKey)
 {
 	return collider;
 }

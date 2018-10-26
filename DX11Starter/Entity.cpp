@@ -16,7 +16,7 @@ Entity::Entity(Mesh* mesh, Material* material)
 	worldMatrix = GetIdentityMatrix();
 
 	// Assign the default collider from the mesh to the entity
-	collider = mesh->GetCollider();
+	this->collider = mesh->GetCollider(ColliderKey());
 	
 }
 
@@ -114,6 +114,7 @@ void Entity::SetScale(XMFLOAT3 scale)
 	this->scale = scale;
 
 	// only scale in one direction as our circle is a circle, not an oval
+	// currently not working Do Not Attempt
 	collider.SetRadius(collider.GetRadius() * max(scale.x, scale.z));
 }
 

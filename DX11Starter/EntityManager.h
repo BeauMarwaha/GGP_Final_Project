@@ -189,5 +189,9 @@ private:
 
 	// Sampler State Helper Methods
 	ID3D11SamplerState* GetSamplerState(std::string samplerStateName);
+
+	// Collision detection helper method
+	// returns true if collision is found
+	bool CheckForCollision(Entity * entity1, Entity * entity2);
 	#pragma endregion
 };

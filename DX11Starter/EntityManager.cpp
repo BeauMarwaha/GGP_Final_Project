@@ -97,16 +97,10 @@ void EntityManager::UpdateEntities(float deltaTime, float totalTime)
 
 		for (auto& other : entities)
 		{
-			// janky way to avoid comparison against itself
-			if (!(&entity == &other))
+			// if entities are colliding with each other
+			if (CheckForCollision(entity.second.entity, other.second.entity))
 			{
-				float dx = entity.second.entity->GetPosition().x - other.second.entity->GetPosition().x;
-				float dy = entity.second.entity->GetPosition().z - other.second.entity->GetPosition().z;
-				float distance = sqrt(dx * dx + dy * dy);
-				if (distance < entity.second.entity->GetCollider().GetRadius() + other.second.entity->GetCollider().GetRadius())
-				{
-					std::cout << "Entity " << entity.first << " collides with " << other.first << std::endl;
-				}
+				// TODO: Handle Collision
 			}
 		}
 	}
@@ -543,4 +537,19 @@ ID3D11SamplerState* EntityManager::GetSamplerState(string samplerStateName)
 
 	// Return the requested sampler state
 	return samplerStates[samplerStateName].samplerState;
+}
+
+bool EntityManager::CheckForCollision(Entity * entity1, Entity * entity2)
+{
+	if (!(&entity1 == &entity1) && entity1->GetCollider().GetEnabled() && entity2->GetCollider().GetEnabled())
+	{
+		float dx = entity1->GetPosition().x - entity2->GetPosition().x;
+		float dz = entity1->GetPosition().z - entity2->GetPosition().z;
+		float distance = sqrt(dx * dx + dz * dz);
+		if (distance < entity1->GetCollider().GetRadius() + entity2->GetCollider().GetRadius())
+		{
+			return true;
+		}
+	}
+	return false;
 }

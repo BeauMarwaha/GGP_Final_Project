@@ -8,6 +8,17 @@
 #include "Collider.h"
 
 // --------------------------------------------------------
+// A small key that only allows entities to directly access
+// their colliders. Everything should reach through an 
+// entity to access the entity specific collider
+// --------------------------------------------------------
+struct ColliderKey
+{
+	friend class Entity;
+	ColliderKey() {}
+};
+
+// --------------------------------------------------------
 // A Mesh class that can take vertex and index data for a 
 //  model and create/store the requisite related buffers 
 //  and mesh-related data for later use
@@ -26,7 +37,8 @@ public:
 	ID3D11Buffer* GetIndexBuffer();
 
 	// returns a copy of the original collider, making each collider unique to each entity
-	Collider GetCollider();
+	// DO NOT directly edit this
+	Collider GetCollider(ColliderKey);
 	int GetIndexCount();
 
 private:

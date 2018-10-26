@@ -227,6 +227,7 @@ void Game::CreateDebugEntities()
 	/*entityManager->GetEntity("Sphere_01")->SetPosition(XMFLOAT3(1, -2.5, 0));
 	entityManager->GetEntity("Sphere_02")->SetPosition(XMFLOAT3(-1, -2.5, 0));*/
 	entityManager->GetEntity("Sphere_03")->SetPosition(XMFLOAT3(-3, 0, 0));
+	//entityManager->GetEntity("Player")->SetScale(XMFLOAT3(0.95, 0.95, 0.95));
 	//entityManager->GetEntity("Torus_01")->SetPosition(XMFLOAT3(2, 0, 0));
 	//entityManager->GetEntity("Torus_02")->SetPosition(XMFLOAT3(-2, 0, 0));
 	//entityManager->GetEntity("Cone_01")->SetPosition(XMFLOAT3(0, 2, 0));
@@ -349,23 +350,23 @@ void Game::DebugUpdate(float deltaTime, float totalTime)
 	torus2->SetRotation(newRot);*/
 
 	// Set up the rate of LERP to pulse up and down each second
-	float rate = 0.5f;
-	if ((long)totalTime % 2 == 0)
-	{
-		rate = totalTime - (long)totalTime;
-	}
-	else
-	{
-		rate = 1 - (totalTime - (long)totalTime);
-	}
+	//float rate = 0.5f;
+	//if ((long)totalTime % 2 == 0)
+	//{
+	//	rate = totalTime - (long)totalTime;
+	//}
+	//else
+	//{
+	//	rate = 1 - (totalTime - (long)totalTime);
+	//}
 
-	// Lerp the scale of the helix entity
-	Entity* helix = entityManager->GetEntity("Player");
-	XMFLOAT3 scale = XMFLOAT3(1.0, 1.0, 1.0);
-	XMFLOAT3 scaleMin = XMFLOAT3(0.75, 0.75, 0.75);
-	XMFLOAT3 scaleMax = XMFLOAT3(1.25, 1.25, 1.25);
-	XMStoreFloat3(&scale, XMVectorLerp(XMLoadFloat3(&scaleMin), XMLoadFloat3(&scaleMax), rate));
-	helix->SetScale(scale);
+	//// Lerp the scale of the helix entity
+	//Entity* helix = entityManager->GetEntity("Player");
+	//XMFLOAT3 scale = XMFLOAT3(1.0, 1.0, 1.0);
+	//XMFLOAT3 scaleMin = XMFLOAT3(0.75, 0.75, 0.75);
+	//XMFLOAT3 scaleMax = XMFLOAT3(1.25, 1.25, 1.25);
+	//XMStoreFloat3(&scale, XMVectorLerp(XMLoadFloat3(&scaleMin), XMLoadFloat3(&scaleMax), rate));
+	//helix->SetScale(scale);
 }
 
 // --------------------------------------------------------
