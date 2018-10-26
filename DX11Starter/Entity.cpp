@@ -53,9 +53,9 @@ void Entity::Update(float deltaTime, float totalTime)
 	if (isWorldDirty) {
 		// Update the world matrix based on the position, rotation, and scale
 		XMStoreFloat4x4(&worldMatrix,
-			XMMatrixTranslation(position.x, position.y, position.z) *
+			XMMatrixScaling(scale.x, scale.y, scale.z)*
 			XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z) *
-			XMMatrixScaling(scale.x, scale.y, scale.z));
+			XMMatrixTranslation(position.x, position.y, position.z));
 
 		isWorldDirty = false;
 	}
