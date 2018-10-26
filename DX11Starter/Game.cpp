@@ -215,13 +215,15 @@ void Game::CreateDebugEntities()
 
 	// Create entities using the previously set up resources
 	entityManager->CreateEntity("Player", "Sphere_Mesh", "Cliff_Normal_Material");
-	entityManager->CreateEntity("Sphere_01", "Sphere_Mesh", "Cliff_Material");
-	entityManager->CreateEntity("Sphere_02", "Sphere_Mesh", "Cliff_Normal_Material");
+	/*entityManager->CreateEntity("Sphere_01", "Sphere_Mesh", "Cliff_Material");
+	entityManager->CreateEntity("Sphere_02", "Sphere_Mesh", "Cliff_Normal_Material");*/
 	entityManager->CreateEntity("Sphere_03", "Sphere_Mesh", "Cliff_Normal_Material");
 
 	// Set up initial entity positions
-	entityManager->GetEntity("Sphere_01")->SetPosition(XMFLOAT3(1, -2.5, 0));
-	entityManager->GetEntity("Sphere_02")->SetPosition(XMFLOAT3(-1, -2.5, 0));
+	/*entityManager->GetEntity("Player")->SetScale(XMFLOAT3(0.5, 0.5, 0.5));
+	entityManager->GetEntity("Player")->SetPosition(XMFLOAT3(-2.45, 0, 0));*/
+	/*entityManager->GetEntity("Sphere_01")->SetPosition(XMFLOAT3(1, -2.5, 0));
+	entityManager->GetEntity("Sphere_02")->SetPosition(XMFLOAT3(-1, -2.5, 0));*/
 	entityManager->GetEntity("Sphere_03")->SetPosition(XMFLOAT3(-3, 0, 0));
 }
 

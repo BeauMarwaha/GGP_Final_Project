@@ -101,6 +101,7 @@ void EntityManager::UpdateEntities(float deltaTime, float totalTime)
 			if (CheckForCollision(entity.second.entity, other.second.entity))
 			{
 				// TODO: Handle Collision
+				cout << entity.first << " is colliding with " << other.first << endl;
 			}
 		}
 	}
@@ -541,7 +542,7 @@ ID3D11SamplerState* EntityManager::GetSamplerState(string samplerStateName)
 
 bool EntityManager::CheckForCollision(Entity * entity1, Entity * entity2)
 {
-	if (!(&entity1 == &entity1) && entity1->GetCollider().GetEnabled() && entity2->GetCollider().GetEnabled())
+	if (!(entity1 == entity2) && entity1->GetCollider().GetEnabled() && entity2->GetCollider().GetEnabled())
 	{
 		float dx = entity1->GetPosition().x - entity2->GetPosition().x;
 		float dz = entity1->GetPosition().z - entity2->GetPosition().z;
