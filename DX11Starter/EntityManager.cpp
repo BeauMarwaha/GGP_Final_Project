@@ -101,7 +101,7 @@ void EntityManager::UpdateEntities(float deltaTime, float totalTime)
 			if (CheckForCollision(entity.second.entity, other.second.entity))
 			{
 				// TODO: Handle Collision
-				cout << entity.first << " is colliding with " << other.first << endl;
+				//cout << entity.first << " is colliding with " << other.first << endl;
 			}
 		}
 	}
