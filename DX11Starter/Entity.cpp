@@ -46,6 +46,11 @@ Entity & Entity::operator=(Entity const & other)
 	return *this;
 }
 
+bool Entity::operator==(Entity const & other)
+{
+	return this == &other;
+}
+
 Entity::~Entity()
 {
 }
@@ -79,6 +84,11 @@ XMFLOAT3 Entity::GetScale()
 	return scale;
 }
 
+Collider Entity::GetCollider()
+{
+	return collider;
+}
+
 Mesh* Entity::GetMesh()
 {
 	return mesh;
@@ -102,7 +112,9 @@ void Entity::SetRotation(XMFLOAT3 rotation)
 void Entity::SetScale(XMFLOAT3 scale)
 {
 	this->scale = scale;
-	// TODO: scale our entities collider by the scale
+
+	// only scale in one direction as our circle is a circle, not an oval
+	collider.SetRadius(collider.GetRadius() * max(scale.x, scale.z));
 }
 
 void Entity::SetMesh(Mesh* mesh)

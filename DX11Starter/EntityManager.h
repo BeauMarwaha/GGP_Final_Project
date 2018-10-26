@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <iostream>
 #include "Entity.h"
 #include "Mesh.h"
 #include "Material.h"

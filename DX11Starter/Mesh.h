@@ -24,6 +24,8 @@ public:
 	// GET methods
 	ID3D11Buffer* GetVertexBuffer();
 	ID3D11Buffer* GetIndexBuffer();
+
+	// returns a copy of the original collider, making each collider unique to each entity
 	Collider GetCollider();
 	int GetIndexCount();
 
@@ -40,6 +42,9 @@ private:
 	int indexCount = 0;
 
 	// A collider for the base geometry of the mesh
+	// Think of this as the base collider that entites base their own colliders on
+	// Each entity of a given mesh is given a copy of this collider to modify
+	// by their own scale
 	Collider collider;
 };
 

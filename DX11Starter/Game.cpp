@@ -215,21 +215,21 @@ void Game::CreateDebugEntities()
 
 	// Create entities using the previously set up resources
 	entityManager->CreateEntity("Player", "Sphere_Mesh", "Cliff_Normal_Material");
-	entityManager->CreateEntity("Sphere_01", "Sphere_Mesh", "Cliff_Material");
-	entityManager->CreateEntity("Sphere_02", "Sphere_Mesh", "Cliff_Normal_Material");
+	/*entityManager->CreateEntity("Sphere_01", "Sphere_Mesh", "Cliff_Material");
+	entityManager->CreateEntity("Sphere_02", "Sphere_Mesh", "Cliff_Normal_Material");*/
 	entityManager->CreateEntity("Sphere_03", "Sphere_Mesh", "Cliff_Normal_Material");
-	entityManager->CreateEntity("Helix_01", "Helix_Mesh", "Snow_Material");
-	entityManager->CreateEntity("Cone_01", "Cone_Mesh", "Rock_Material");
-	entityManager->CreateEntity("Torus_01", "Torus_Mesh", "Rock_Material");
-	entityManager->CreateEntity("Torus_02", "Torus_Mesh", "Snow_Material");
+	//entityManager->CreateEntity("Helix_01", "Helix_Mesh", "Snow_Material");
+	//entityManager->CreateEntity("Cone_01", "Cone_Mesh", "Rock_Material");
+	//entityManager->CreateEntity("Torus_01", "Torus_Mesh", "Rock_Material");
+	//entityManager->CreateEntity("Torus_02", "Torus_Mesh", "Snow_Material");
 
 	// Set up initial entity positions
-	entityManager->GetEntity("Sphere_01")->SetPosition(XMFLOAT3(1, -2.5, 0));
-	entityManager->GetEntity("Sphere_02")->SetPosition(XMFLOAT3(-1, -2.5, 0));
+	/*entityManager->GetEntity("Sphere_01")->SetPosition(XMFLOAT3(1, -2.5, 0));
+	entityManager->GetEntity("Sphere_02")->SetPosition(XMFLOAT3(-1, -2.5, 0));*/
 	entityManager->GetEntity("Sphere_03")->SetPosition(XMFLOAT3(-3, 0, 0));
-	entityManager->GetEntity("Torus_01")->SetPosition(XMFLOAT3(2, 0, 0));
-	entityManager->GetEntity("Torus_02")->SetPosition(XMFLOAT3(-2, 0, 0));
-	entityManager->GetEntity("Cone_01")->SetPosition(XMFLOAT3(0, 2, 0));
+	//entityManager->GetEntity("Torus_01")->SetPosition(XMFLOAT3(2, 0, 0));
+	//entityManager->GetEntity("Torus_02")->SetPosition(XMFLOAT3(-2, 0, 0));
+	//entityManager->GetEntity("Cone_01")->SetPosition(XMFLOAT3(0, 2, 0));
 }
 
 // --------------------------------------------------------
@@ -341,31 +341,31 @@ void Game::DebugUpdate(float deltaTime, float totalTime)
 	}
 
 	// Rotate the torus entities
-	Entity* torus1 = entityManager->GetEntity("Torus_01");
+	/*Entity* torus1 = entityManager->GetEntity("Torus_01");
 	Entity* torus2 = entityManager->GetEntity("Torus_02");
 	XMFLOAT3 currentRot = torus1->GetRotation();
 	XMFLOAT3 newRot = XMFLOAT3(currentRot.x, currentRot.y, currentRot.z + (1 * deltaTime));
 	torus1->SetRotation(newRot);
-	torus2->SetRotation(newRot);
+	torus2->SetRotation(newRot);*/
 
 	// Set up the rate of LERP to pulse up and down each second
-	float rate = 0.5f;
-	if ((long)totalTime % 2 == 0)
-	{
-		rate = totalTime - (long)totalTime;
-	}
-	else
-	{
-		rate = 1 - (totalTime - (long)totalTime);
-	}
+	//float rate = 0.5f;
+	//if ((long)totalTime % 2 == 0)
+	//{
+	//	rate = totalTime - (long)totalTime;
+	//}
+	//else
+	//{
+	//	rate = 1 - (totalTime - (long)totalTime);
+	//}
 
-	// Lerp the scale of the helix entity
-	Entity* helix = entityManager->GetEntity("Helix_01");
-	XMFLOAT3 scale = XMFLOAT3(1.0, 1.0, 1.0);
-	XMFLOAT3 scaleMin = XMFLOAT3(0.75, 0.75, 0.75);
-	XMFLOAT3 scaleMax = XMFLOAT3(1.25, 1.25, 1.25);
-	XMStoreFloat3(&scale, XMVectorLerp(XMLoadFloat3(&scaleMin), XMLoadFloat3(&scaleMax), rate));
-	helix->SetScale(scale);
+	//// Lerp the scale of the helix entity
+	//Entity* helix = entityManager->GetEntity("Helix_01");
+	//XMFLOAT3 scale = XMFLOAT3(1.0, 1.0, 1.0);
+	//XMFLOAT3 scaleMin = XMFLOAT3(0.75, 0.75, 0.75);
+	//XMFLOAT3 scaleMax = XMFLOAT3(1.25, 1.25, 1.25);
+	//XMStoreFloat3(&scale, XMVectorLerp(XMLoadFloat3(&scaleMin), XMLoadFloat3(&scaleMax), rate));
+	//helix->SetScale(scale);
 }
 
 // --------------------------------------------------------

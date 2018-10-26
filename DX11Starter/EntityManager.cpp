@@ -94,6 +94,21 @@ void EntityManager::UpdateEntities(float deltaTime, float totalTime)
 	for (auto& entity : entities)
 	{
 		entity.second.entity->Update(deltaTime, totalTime);
+
+		for (auto& other : entities)
+		{
+			// janky way to avoid comparison against itself
+			if (!(&entity == &other))
+			{
+				float dx = entity.second.entity->GetPosition().x - other.second.entity->GetPosition().x;
+				float dy = entity.second.entity->GetPosition().z - other.second.entity->GetPosition().z;
+				float distance = sqrt(dx * dx + dy * dy);
+				if (distance < entity.second.entity->GetCollider().GetRadius() + other.second.entity->GetCollider().GetRadius())
+				{
+					std::cout << "Entity " << entity.first << " collides with " << other.first << std::endl;
+				}
+			}
+		}
 	}
 }
 

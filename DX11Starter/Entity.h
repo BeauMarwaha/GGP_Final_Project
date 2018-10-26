@@ -14,6 +14,7 @@ public:
 	Entity(Mesh* mesh, Material* material); // Constructor
 	Entity(Entity const& other); // Copy Constructor
 	Entity& operator=(Entity const& other); // Copy Assignment Operator
+	bool operator==(Entity const& other);
 	~Entity(); // Destructor
 
 	// Updates the game object
@@ -24,6 +25,7 @@ public:
 	DirectX::XMFLOAT3 GetPosition();
 	DirectX::XMFLOAT3 GetRotation();
 	DirectX::XMFLOAT3 GetScale();
+	Collider GetCollider();
 	Mesh* GetMesh();
 
 	// SET methods

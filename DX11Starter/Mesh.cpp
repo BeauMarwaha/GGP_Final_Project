@@ -209,6 +209,9 @@ Mesh::~Mesh()
 	// Release the vertex and index buffers
 	if (vertexBuffer) { vertexBuffer->Release(); }
 	if (indexBuffer) { indexBuffer->Release(); }
+
+	// delete the collider pointer
+	//delete collider;
 }
 
 ID3D11Buffer* Mesh::GetVertexBuffer()
@@ -235,25 +238,42 @@ void Mesh::Setup(ID3D11Device* device, Vertex* vertices, int vertexCount, unsign
 {
 	// Create the default collider associated with the mesh
 	// get farthest pair of vertices
-	//XMFLOAT3 minVertex = XMFLOAT3(FLT_MAX, FLT_MAX, FLT_MAX);
-	//XMFLOAT3 maxVertex = XMFLOAT3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	// Code for adapting a sphereCollider from a mesh: https://www.braynzarsoft.net/viewtutorial/q16390-obj-model-loader
+	XMFLOAT2 minVertex = XMFLOAT2(FLT_MAX, FLT_MAX);
+	XMFLOAT2 maxVertex = XMFLOAT2(-FLT_MAX, -FLT_MAX);
 
-	//for (UINT i = 0; i < vertexCount; i++)
-	//{
-	//	// The minVertex and maxVertex will most likely not be actual vertices in the model, but vertices
-	//	// that use the smallest and largest x, y, and z values from the model to be sure ALL vertices are
-	//	// covered by the bounding volume
+	for (UINT i = 0; i < vertexCount; i++)
+	{
+		// The minVertex and maxVertex will most likely not be actual vertices in the model, but vertices
+		// that use the smallest and largest x, y, and z values from the model to be sure ALL vertices are
+		// covered by the bounding volume
 
-	//	//Get the smallest vertex 
-	//	minVertex.x = min(minVertex.x, vertices[i].Position.x);    // Find smallest x value in model
-	//	minVertex.y = min(minVertex.y, vertices[i].Position.y);    // Find smallest y value in model
-	//	minVertex.z = min(minVertex.z, vertices[i].Position.z);    // Find smallest z value in model
+		//Get the smallest vertex 
+		minVertex.x = min(minVertex.x, vertices[i].Position.x);    // Find smallest x value in model
+		minVertex.y = min(minVertex.y, vertices[i].Position.z);    // Find smallest y value in model, map to z axis since we only care about x and z axes
 
-	//															//Get the largest vertex 
-	//	maxVertex.x = max(maxVertex.x, vertices[i].Position.x);    // Find largest x value in model
-	//	maxVertex.y = max(maxVertex.y, vertices[i].Position.y);    // Find largest y value in model
-	//	maxVertex.z = max(maxVertex.z, vertices[i].Position.z);    // Find largest z value in model
-	//}
+																//Get the largest vertex 
+		maxVertex.x = max(maxVertex.x, vertices[i].Position.x);    // Find largest x value in model
+		maxVertex.y = max(maxVertex.y, vertices[i].Position.z);    // Find largest y value in model, map to z axis since we only care about x and z axes
+	}
+
+	// Calculate where the center is to determine the radius
+	XMFLOAT2 center = XMFLOAT2();
+	center.x = abs(maxVertex.x) - abs(minVertex.x) / 2.0f;
+	center.y = abs(maxVertex.y) - abs(minVertex.y) / 2.0f;
+
+	// Now that we have the center, get the radius
+	for (UINT i = 0; i < vertexCount; i++)
+	{
+		float x = (center.x - vertices[i].Position.x) * (center.x - vertices[i].Position.x);
+		float z = (center.y - vertices[i].Position.z) * (center.y - vertices[i].Position.z);
+
+		// Recalculate collision circle
+		collider.SetRadius(max(collider.GetRadius(), (x + z)));
+	}
+
+	// Apply the square root here to the final result
+	collider.SetRadius(sqrt(collider.GetRadius()));
 
 	// Calculate the tangents before copying to buffer
 	CalculateTangents(vertices, vertexCount, indices, indexCount);
