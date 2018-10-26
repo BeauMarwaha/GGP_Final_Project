@@ -259,8 +259,8 @@ void Mesh::Setup(ID3D11Device* device, Vertex* vertices, int vertexCount, unsign
 
 	// Calculate where the center is to determine the radius
 	XMFLOAT2 center = XMFLOAT2();
-	center.x = abs(maxVertex.x) - abs(minVertex.x) / 2.0f;
-	center.y = abs(maxVertex.y) - abs(minVertex.y) / 2.0f;
+	center.x = (abs(maxVertex.x) - abs(minVertex.x)) / 2.0f;
+	center.y = (abs(maxVertex.y) - abs(minVertex.y)) / 2.0f;
 
 	// Now that we have the center, get the radius
 	for (UINT i = 0; i < vertexCount; i++)
