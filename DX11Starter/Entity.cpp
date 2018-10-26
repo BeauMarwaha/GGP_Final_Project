@@ -14,6 +14,7 @@ Entity::Entity(Mesh* mesh, Material* material)
 	rotation = XMFLOAT3(0, 0, 0);
 	scale = XMFLOAT3(1, 1, 1);
 	worldMatrix = GetIdentityMatrix();
+	isWorldDirty = false;
 }
 
 Entity::Entity(Entity const & other)
@@ -24,6 +25,7 @@ Entity::Entity(Entity const & other)
 	rotation = other.rotation;
 	scale = other.scale;
 	worldMatrix = other.worldMatrix;
+	isWorldDirty = other.isWorldDirty;
 }
 
 Entity & Entity::operator=(Entity const & other)
@@ -37,6 +39,7 @@ Entity & Entity::operator=(Entity const & other)
 		rotation = other.rotation;
 		scale = other.scale;
 		worldMatrix = other.worldMatrix;
+		isWorldDirty = other.isWorldDirty;
 	}
 	return *this;
 }
@@ -47,11 +50,15 @@ Entity::~Entity()
 
 void Entity::Update(float deltaTime, float totalTime)
 {
-	// Update the world matrix based on the position, rotation, and scale
-	XMStoreFloat4x4(&worldMatrix,
-		XMMatrixTranslation(position.x, position.y, position.z) *
-		XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z) *
-		XMMatrixScaling(scale.x, scale.y, scale.z));
+	if (isWorldDirty) {
+		// Update the world matrix based on the position, rotation, and scale
+		XMStoreFloat4x4(&worldMatrix,
+			XMMatrixTranslation(position.x, position.y, position.z) *
+			XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z) *
+			XMMatrixScaling(scale.x, scale.y, scale.z));
+
+		isWorldDirty = false;
+	}
 }
 
 XMFLOAT4X4 Entity::GetWorldMatrix()
@@ -86,16 +93,19 @@ void Entity::SetWorldMatrix(XMFLOAT4X4 worldMatrix)
 
 void Entity::SetPosition(XMFLOAT3 position)
 {
+	isWorldDirty = true;
 	this->position = position;
 }
 
 void Entity::SetRotation(XMFLOAT3 rotation)
 {
+	isWorldDirty = true;
 	this->rotation = rotation;
 }
 
 void Entity::SetScale(XMFLOAT3 scale)
 {
+	isWorldDirty = true;
 	this->scale = scale;
 }
 
@@ -106,6 +116,7 @@ void Entity::SetMesh(Mesh* mesh)
 
 void Entity::Move(XMFLOAT3 direction, XMFLOAT3 velocity)
 {
+	isWorldDirty = true;
 	XMVECTOR initialPos = XMLoadFloat3(&position);
 	XMVECTOR movement = XMVector3Rotate(XMLoadFloat3(&velocity), XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&direction)));
 	XMStoreFloat3(&position, initialPos + movement);
@@ -113,6 +124,7 @@ void Entity::Move(XMFLOAT3 direction, XMFLOAT3 velocity)
 
 void Entity::MoveForward(XMFLOAT3 velocity)
 {
+	isWorldDirty = true;
 	XMVECTOR initialPos = XMLoadFloat3(&position);
 	XMVECTOR movement = XMVector3Rotate(XMLoadFloat3(&velocity), XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&rotation)));
 	XMStoreFloat3(&position, initialPos + movement);
