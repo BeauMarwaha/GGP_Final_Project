@@ -53,6 +53,9 @@ private:
 	DirectX::XMFLOAT3 rotation;
 	DirectX::XMFLOAT3 scale;
 
+	// Boolean for if the world matrix needs to be recalculated
+	bool isWorldDirty;
+
 	// Entity Mesh
 	Mesh* mesh;
 
