@@ -27,7 +27,7 @@ Camera::~Camera()
 {
 }
 
-void Camera::Update(float deltaTime, float totalTime)
+void Camera::Update(float deltaTime, float totalTime, Entity* player, bool debugCameraEnabled)
 {
 	// Calculate the camera's view matrix
 	XMMATRIX rotation = XMMatrixRotationRollPitchYaw(xRotation, yRotation, 0);
@@ -41,49 +41,71 @@ void Camera::Update(float deltaTime, float totalTime)
 	XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(newViewMatrix)); // Transpose for HLSL
 
 	// Move the camera
-	Move(deltaTime);
+	Move(deltaTime, player, debugCameraEnabled);
 }
 
-void Camera::Move(float deltaTime)
+void Camera::Move(float deltaTime, Entity* player, bool debugCameraEnabled)
 {
-	// Set initial velocity to 0
-	XMFLOAT3 velocity = XMFLOAT3(0, 0, 0);
-
-	// Check for player input
-	if (GetAsyncKeyState('W') & 0x8000)
+	// Check if the debug camera is enabled, if so use manual player control
+	if (debugCameraEnabled)
 	{
-		velocity.z += speed * deltaTime;
+		// Set initial velocity to 0
+		XMFLOAT3 velocity = XMFLOAT3(0, 0, 0);
+
+		// Check for camera input
+		if (GetAsyncKeyState('I') & 0x8000)
+		{
+			velocity.z += speed * deltaTime;
+		}
+
+		if (GetAsyncKeyState('K') & 0x8000)
+		{
+			velocity.z -= speed * deltaTime;
+		}
+
+		if (GetAsyncKeyState('J') & 0x8000)
+		{
+			velocity.x -= speed * deltaTime;
+		}
+
+		if (GetAsyncKeyState('L') & 0x8000)
+		{
+			velocity.x += speed * deltaTime;
+		}
+
+		if (GetAsyncKeyState('U') & 0x8000)
+		{
+			velocity.y += speed * deltaTime;
+		}
+
+		if (GetAsyncKeyState('O') & 0x8000)
+		{
+			velocity.y -= speed * deltaTime;
+		}
+
+		// Update camera position based on input
+		XMVECTOR initialPos = XMLoadFloat3(&position);
+		XMVECTOR movement = XMVector3Rotate(XMLoadFloat3(&velocity), XMQuaternionRotationRollPitchYaw(xRotation, yRotation, 0));
+		XMStoreFloat3(&position, initialPos + movement);
+
+		return;
 	}
 
-	if (GetAsyncKeyState('S') & 0x8000)
-	{
-		velocity.z -= speed * deltaTime;
-	}
+	// If the debug camera is not enabled update the camera position based on player location
+	XMMATRIX rotation = XMMatrixRotationRollPitchYaw(xRotation, yRotation, 0);
+	XMFLOAT4 forward = XMFLOAT4(0, 0, 1, 0);
+	XMVECTOR newForward = XMVector4Transform(XMLoadFloat4(&forward), rotation);
+	XMFLOAT4 playerForward = XMFLOAT4(0, 0, 1, 0);
+	XMStoreFloat4(&playerForward, newForward);
 
-	if (GetAsyncKeyState('D') & 0x8000)
-	{
-		velocity.x += speed * deltaTime;
-	}
+	// Have the camera sit slightly above and behind the player
+	position.x = player->GetPosition().x - (playerForward.x * 2);
+	position.y = player->GetPosition().y + 0.5f;	
+	position.z = player->GetPosition().z - (playerForward.z * 2);
 
-	if (GetAsyncKeyState('A') & 0x8000)
-	{
-		velocity.x -= speed * deltaTime;
-	}
-
-	if (GetAsyncKeyState('Q') & 0x8000)
-	{
-		velocity.y += speed * deltaTime;
-	}
-
-	if (GetAsyncKeyState('E') & 0x8000)
-	{
-		velocity.y -= speed * deltaTime;
-	}
-
-	// Update player position based on input
-	XMVECTOR initialPos = XMLoadFloat3(&position);
-	XMVECTOR movement = XMVector3Rotate(XMLoadFloat3(&velocity), XMQuaternionRotationRollPitchYaw(xRotation, yRotation, 0));
-	XMStoreFloat3(&position, initialPos + movement);
+	// Have the rotation follow the player
+	xRotation = player->GetRotation().x;
+	yRotation = fmod(player->GetRotation().y, PI * 2);
 }
 
 void Camera::Rotate(float deltaX, float deltaY)

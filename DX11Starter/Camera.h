@@ -2,6 +2,7 @@
 
 #include <DirectXMath.h>
 #include <Windows.h>
+#include "Entity.h"
 
 class Camera
 {
@@ -10,10 +11,10 @@ public:
 	~Camera(); // Destructor
 
 	// Update method
-	void Update(float deltaTime, float totalTime);
+	void Update(float deltaTime, float totalTime, Entity* player, bool debugCameraEnabled);
 
 	// Helper methods
-	void Move(float deltaTime);
+	void Move(float deltaTime, Entity* player, bool debugCameraEnabled);
 	void Rotate(float deltaX, float deltaY);
 	void ResizeWindow(unsigned int width, unsigned int height);
 

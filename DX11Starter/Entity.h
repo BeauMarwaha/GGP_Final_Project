@@ -38,6 +38,7 @@ public:
 	// Entity Transform Methods
 	void Move(DirectX::XMFLOAT3 direction, DirectX::XMFLOAT3 velocity);
 	void MoveForward(DirectX::XMFLOAT3 velocity);
+	void RotateBy(DirectX::XMFLOAT3 deltaRotation);
 
 	// Helper methods
 	DirectX::XMFLOAT4X4 GetIdentityMatrix();

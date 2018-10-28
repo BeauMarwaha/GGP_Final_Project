@@ -53,6 +53,9 @@ private:
 	// FPS camera
 	Camera* camera;
 
+	// Whether the debug camera is enabled
+	bool debugCameraEnabled;
+
 	// Entity Manager
 	EntityManager* entityManager;
 

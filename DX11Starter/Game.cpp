@@ -23,6 +23,7 @@ Game::Game(HINSTANCE hInstance)
 	// Initialize fields
 	mouseDown = false;
 	camera = new Camera(width, height);
+	debugCameraEnabled = false;
 	entityManager = new EntityManager();
 
 	// Set the game state to the debug scene
@@ -237,6 +238,49 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
+	// Switch between normal and debug camera modes when the ` key is pressed
+	static bool currentPress = false;
+	if (GetAsyncKeyState(0xC0) & 0x8000)
+	{
+		if (!currentPress)
+		{
+			debugCameraEnabled = !debugCameraEnabled;
+		}
+		currentPress = true;
+	}
+	else
+	{
+		currentPress = false;
+	}
+
+	// Movement for the player entity
+	Entity* player = entityManager->GetEntity("Player");
+	if (&player != nullptr)
+	{
+		// Set movement rate
+		float speed = 5.0;
+
+		if (GetAsyncKeyState('W') & 0x8000)
+		{
+			player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime));
+		}
+
+		if (GetAsyncKeyState('S') & 0x8000)
+		{
+			player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime));
+		}
+
+		if (GetAsyncKeyState('A') & 0x8000)
+		{
+			player->RotateBy(XMFLOAT3(0, -speed * deltaTime, 0));
+		}
+
+		if (GetAsyncKeyState('D') & 0x8000)
+		{
+			player->RotateBy(XMFLOAT3(0, speed * deltaTime, 0));
+		}
+	}
+
 	// Update the game based on the current game state
 	switch (state)
 	{
@@ -249,7 +293,7 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	// Update the camera
-	camera->Update(deltaTime, totalTime);
+	camera->Update(deltaTime, totalTime, entityManager->GetEntity("Player"), debugCameraEnabled);
 
 	// Update all entities
 	entityManager->UpdateEntities(deltaTime, totalTime);
@@ -257,85 +301,11 @@ void Game::Update(float deltaTime, float totalTime)
 
 void Game::GameUpdate(float deltaTime, float totalTime)
 {
-	// Movement for the player entity
-	Entity* player = entityManager->GetEntity("Player");
-	if (&player != nullptr)
-	{
-		// Set movement rate
-		float speed = 5.0;
 
-		if (GetAsyncKeyState('I') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, speed * deltaTime, 0));
-		}
-
-		if (GetAsyncKeyState('K') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, -speed * deltaTime, 0));
-		}
-
-		if (GetAsyncKeyState('L') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(speed * deltaTime, 0, 0));
-		}
-
-		if (GetAsyncKeyState('J') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(-speed * deltaTime, 0, 0));
-		}
-
-		if (GetAsyncKeyState('O') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime));
-		}
-
-		if (GetAsyncKeyState('U') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime));
-		}
-	}
 }
 
 void Game::DebugUpdate(float deltaTime, float totalTime)
 {
-	// Movement for the player entity
-	Entity* player = entityManager->GetEntity("Player");
-	if (&player != nullptr)
-	{
-		// Set movement rate
-		float speed = 5.0;
-
-		if (GetAsyncKeyState('I') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, speed * deltaTime, 0));
-		}
-
-		if (GetAsyncKeyState('K') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, -speed * deltaTime, 0));
-		}
-
-		if (GetAsyncKeyState('L') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(speed * deltaTime, 0, 0));
-		}
-
-		if (GetAsyncKeyState('J') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(-speed * deltaTime, 0, 0));
-		}
-
-		if (GetAsyncKeyState('O') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime));
-		}
-
-		if (GetAsyncKeyState('U') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime));
-		}
-	}
-
 	// Rotate the torus entities
 	/*Entity* torus1 = entityManager->GetEntity("Torus_01");
 	Entity* torus2 = entityManager->GetEntity("Torus_02");
@@ -455,7 +425,8 @@ void Game::OnMouseMove(WPARAM buttonState, int x, int y)
 	// Set the sensitivity of the camera
 	static float sensitivity = .1f;
 
-	if (mouseDown)
+	// Only rotate the camera if the mouse is clicked and the debug camera is enabled
+	if (mouseDown && debugCameraEnabled)
 	{
 		// Rotate the camera
 		float deltaX = (x - prevMousePos.x) * (3.141592f / 180.0f);

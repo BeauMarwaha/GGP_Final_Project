@@ -149,6 +149,14 @@ void Entity::MoveForward(XMFLOAT3 velocity)
 	XMStoreFloat3(&position, initialPos + movement);
 }
 
+void Entity::RotateBy(DirectX::XMFLOAT3 deltaRotation)
+{
+	isWorldDirty = true;
+	rotation.x += deltaRotation.x;
+	rotation.y += deltaRotation.y;
+	rotation.z += deltaRotation.z;
+}
+
 XMFLOAT4X4 Entity::GetIdentityMatrix()
 {
 	XMFLOAT4X4 identityMatrix = XMFLOAT4X4();
