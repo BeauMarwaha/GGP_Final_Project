@@ -37,13 +37,16 @@ public:
 
 	// Entity Transform Methods
 	void Move(DirectX::XMFLOAT3 direction, DirectX::XMFLOAT3 velocity);
-	void MoveForward(DirectX::XMFLOAT3 velocity);
+	void MoveForward(DirectX::XMFLOAT3 velocity, float dTime);
 	void RotateBy(DirectX::XMFLOAT3 deltaRotation);
 
 	// Helper methods
 	DirectX::XMFLOAT4X4 GetIdentityMatrix();
 	void Draw(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
 	void PrepareMaterial(DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
+
+	float speed;
+	DirectX::XMVECTOR moveDir;
 
 private:
 	// World Matrix representing the entity’s current position, rotation, and scale
