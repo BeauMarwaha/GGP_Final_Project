@@ -25,6 +25,7 @@ Game::Game(HINSTANCE hInstance)
 	camera = new Camera(width, height);
 	debugCameraEnabled = false;
 	entityManager = new EntityManager();
+	
 
 	// Set the game state to the debug scene
 	state = GameState::Debug;
@@ -49,6 +50,9 @@ Game::~Game()
 
 	// Delete the entity manager
 	delete entityManager;
+
+	// delete the font
+	delete font;
 }
 
 // --------------------------------------------------------
@@ -57,6 +61,9 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+	// Create font
+	font = new SpriteFont(device, L"resources/fonts/MenuFont.spritefont");
+
 	// Helper methods for initialization based on game state
 	switch (state)
 	{

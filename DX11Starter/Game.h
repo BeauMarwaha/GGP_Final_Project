@@ -6,6 +6,7 @@
 #include "DirectionalLight.h"
 #include "EntityManager.h"
 #include <DirectXMath.h>
+#include <SpriteFont.h>
 #include <vector>
 
 enum class GameState
@@ -49,6 +50,9 @@ private:
 	// Update methods unique to game states
 	void GameUpdate(float deltaTime, float totalTime);
 	void DebugUpdate(float deltaTime, float totalTime);
+
+	// Menu Font
+	DirectX::SpriteFont * font;
 
 	// FPS camera
 	Camera* camera;
