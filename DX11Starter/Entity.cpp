@@ -9,10 +9,14 @@ Entity::Entity(Mesh* mesh, Material* material)
 	this->mesh = mesh;
 	this->material = material;
 
-	// Set the location vectors and matrix to default values
+	// Set the location and movement vectors and matrix to default values
 	position = XMFLOAT3(0, 0, 0);
 	rotation = XMFLOAT3(0, 0, 0);
 	scale = XMFLOAT3(1, 1, 1);
+	velocity = XMFLOAT3(0, 0, 0);
+	direction = XMFLOAT3(1, 0, 0);
+	maxSpeed = 0;
+
 	worldMatrix = GetIdentityMatrix();
 
 	// Assign the default collider from the mesh to the entity
@@ -28,6 +32,9 @@ Entity::Entity(Entity const & other)
 	position = other.position;
 	rotation = other.rotation;
 	scale = other.scale;
+	velocity = other.velocity;
+	direction = other.direction;
+	maxSpeed = other.maxSpeed;
 	collider = other.collider;
 	worldMatrix = other.worldMatrix;
 	isWorldDirty = other.isWorldDirty;
@@ -43,6 +50,10 @@ Entity & Entity::operator=(Entity const & other)
 		position = other.position;
 		rotation = other.rotation;
 		scale = other.scale;
+		velocity = other.velocity;
+		direction = other.direction;
+		maxSpeed = other.maxSpeed;
+		collider = other.collider;
 		worldMatrix = other.worldMatrix;
 		isWorldDirty = other.isWorldDirty;
 	}
@@ -89,6 +100,21 @@ XMFLOAT3 Entity::GetRotation()
 XMFLOAT3 Entity::GetScale()
 {
 	return scale;
+}
+
+DirectX::XMFLOAT3 Entity::GetVelocity()
+{
+	return velocity;
+}
+
+DirectX::XMFLOAT3 Entity::GetDirection()
+{
+	return direction;
+}
+
+float Entity::GetMaxSpeed()
+{
+	return maxSpeed;
 }
 
 Collider Entity::GetCollider()

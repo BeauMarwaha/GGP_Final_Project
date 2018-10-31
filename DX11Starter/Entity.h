@@ -25,6 +25,9 @@ public:
 	DirectX::XMFLOAT3 GetPosition();
 	DirectX::XMFLOAT3 GetRotation();
 	DirectX::XMFLOAT3 GetScale();
+	DirectX::XMFLOAT3 GetVelocity();
+	DirectX::XMFLOAT3 GetDirection();
+	float GetMaxSpeed();
 	Collider GetCollider();
 	Mesh* GetMesh();
 
@@ -45,7 +48,7 @@ public:
 	void Draw(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
 	void PrepareMaterial(DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
 
-private:
+protected:
 	// World Matrix representing the entity’s current position, rotation, and scale
 	DirectX::XMFLOAT4X4 worldMatrix;
 
@@ -53,6 +56,11 @@ private:
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT3 rotation;
 	DirectX::XMFLOAT3 scale;
+
+	// Velocity, direction, and Max Speed for movement of entities
+	DirectX::XMFLOAT3 velocity;
+	DirectX::XMFLOAT3 direction;
+	int maxSpeed;
 
 	// Boolean for if the world matrix needs to be recalculated
 	bool isWorldDirty;
