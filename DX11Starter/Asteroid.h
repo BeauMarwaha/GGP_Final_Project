@@ -9,7 +9,10 @@ class Asteroid :
 	public Entity
 {
 public:
-	Asteroid();
+	Asteroid(Mesh* m, Material* mat);
 	~Asteroid();
+
+	// Update the asteroid
+	void Update(float deltaTime, float totalTime);
 };
 
