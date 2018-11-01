@@ -1,13 +1,25 @@
 #pragma once
+#ifndef EntityManager_Included
+#define EntityManager_Included
 
 #include <map>
 #include <iostream>
 #include "Entity.h"
+#include "Asteroid.h"
+#include "Bullet.h"
 #include "Mesh.h"
 #include "Material.h"
 #include "Camera.h"
 #include "DirectionalLight.h"
 #include "WICTextureLoader.h"
+
+enum class EntityType
+{
+	Base = 1,
+	Player = 2,
+	Asteroid = 3,
+	Bullet = 4
+};
 
 #pragma region Smart Structs
 // Struct representing a smart entity
@@ -129,7 +141,7 @@ public:
 
 	#pragma region Public Helper Methods
 	// Entity Helper Methods
-	void CreateEntity(std::string entityName, std::string meshName, std::string materialName);
+	void CreateEntity(std::string entityName, std::string meshName, std::string materialName, EntityType type);
 	void RemoveEntity(std::string entityName);
 	Entity* GetEntity(std::string entityName);
 
@@ -195,3 +207,4 @@ private:
 	bool CheckForCollision(Entity * entity1, Entity * entity2);
 	#pragma endregion
 };
+#endif

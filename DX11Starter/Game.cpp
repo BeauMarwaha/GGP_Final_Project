@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Vertex.h"
+#include <ctime> 
 
 // For the DirectX Math library
 using namespace DirectX;
@@ -29,7 +30,7 @@ Game::Game(HINSTANCE hInstance)
 	
 
 	// Set the game state to the debug scene
-	state = GameState::Debug;
+	state = GameState::Game;
 	currentScene = SceneState::Game;
 
 #if defined(DEBUG) || defined(_DEBUG)
@@ -73,6 +74,8 @@ void Game::Init()
 	menuManager = new MenuManager(font);
 	// Initialize SpriteBatch
 	spriteBatch = new SpriteBatch(context);
+	// Seed the random 
+	srand((unsigned)time(0));
 
 	// Helper methods for initialization based on game state
 	switch (state)
@@ -136,6 +139,7 @@ void Game::CreateEntities()
 	// Create the rock shader resource view
 	entityManager->CreateShaderResourceView("Cliff_Texture", device, context, L"resources/textures/CliffLayered_bc.tif");
 	entityManager->CreateShaderResourceView("Cliff_Normal_Texture", device, context, L"resources/textures/CliffLayered_normal.tif");
+	entityManager->CreateShaderResourceView("Snow_Texture", device, context, L"resources/textures/Snow_bc.jpg");
 
 	// Define the anisotropic filtering sampler description
 	D3D11_SAMPLER_DESC samplerDesc = {}; // Zero out all values initially
@@ -151,12 +155,17 @@ void Game::CreateEntities()
 
 	// Create the rock material using the previously set up resources
 	entityManager->CreateMaterialWithNormal("Cliff_Normal_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "Cliff_Texture", "Cliff_Normal_Texture", "Anisotropic_Sampler");
-	
+	// Create the snow material using the previously set up resources
+	entityManager->CreateMaterial("Snow_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "Snow_Texture", "Anisotropic_Sampler");
+
 	// Load geometry
 	entityManager->CreateMesh("Sphere_Mesh", device, "resources/models/sphere.obj");
+	entityManager->CreateMesh("Cone_Mesh", device, "resources/models/cone.obj");
 
 	// Create entities using the previously set up resources
-	entityManager->CreateEntity("Player", "Sphere_Mesh", "Cliff_Normal_Material");
+	entityManager->CreateEntity("Player", "Cone_Mesh", "Cliff_Normal_Material", EntityType::Player);
+	entityManager->CreateEntity("Asteroid1", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid2", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
 }
 
 // --------------------------------------------------------
@@ -232,10 +241,10 @@ void Game::CreateDebugEntities()
 	entityManager->CreateMesh("Cone_Mesh", device, "resources/models/cone.obj");
 
 	// Create entities using the previously set up resources
-	entityManager->CreateEntity("Player", "Sphere_Mesh", "Cliff_Normal_Material");
+	entityManager->CreateEntity("Player", "Sphere_Mesh", "Cliff_Normal_Material", EntityType::Player);
 	/*entityManager->CreateEntity("Sphere_01", "Sphere_Mesh", "Cliff_Material");
 	entityManager->CreateEntity("Sphere_02", "Sphere_Mesh", "Cliff_Normal_Material");*/
-	entityManager->CreateEntity("Sphere_03", "Sphere_Mesh", "Cliff_Normal_Material");
+	entityManager->CreateEntity("Sphere_03", "Sphere_Mesh", "Cliff_Normal_Material", EntityType::Base);
 
 	// Set up initial entity positions
 	entityManager->GetEntity("Player")->SetScale(XMFLOAT3(0.5, 0.5, 0.5));
@@ -281,12 +290,12 @@ void Game::Update(float deltaTime, float totalTime)
 
 			if (GetAsyncKeyState('W') & 0x8000)
 			{
-				player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime));
+				player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime), 0);
 			}
 
 			if (GetAsyncKeyState('S') & 0x8000)
 			{
-				player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime));
+				player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime), 0);
 			}
 
 			if (GetAsyncKeyState('A') & 0x8000)

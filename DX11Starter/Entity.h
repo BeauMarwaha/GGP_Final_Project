@@ -18,13 +18,16 @@ public:
 	~Entity(); // Destructor
 
 	// Updates the game object
-	void Update(float deltaTime, float totalTime);
+	void virtual Update(float deltaTime, float totalTime);
 
 	// GET methods
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
 	DirectX::XMFLOAT3 GetPosition();
 	DirectX::XMFLOAT3 GetRotation();
 	DirectX::XMFLOAT3 GetScale();
+	DirectX::XMFLOAT3 GetVelocity();
+	DirectX::XMFLOAT3 GetDirection();
+	float GetMaxSpeed();
 	Collider GetCollider();
 	Mesh* GetMesh();
 
@@ -33,11 +36,12 @@ public:
 	void SetPosition(DirectX::XMFLOAT3 position);
 	void SetRotation(DirectX::XMFLOAT3 rotation);
 	void SetScale(DirectX::XMFLOAT3 scale);
+	void SetDirection(DirectX::XMFLOAT3 direction);
 	void SetMesh(Mesh* mesh);
 
 	// Entity Transform Methods
 	void Move(DirectX::XMFLOAT3 direction, DirectX::XMFLOAT3 velocity);
-	void MoveForward(DirectX::XMFLOAT3 velocity);
+	void MoveForward(DirectX::XMFLOAT3 velocity, float dTime);
 	void RotateBy(DirectX::XMFLOAT3 deltaRotation);
 
 	// Helper methods
@@ -45,7 +49,15 @@ public:
 	void Draw(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
 	void PrepareMaterial(DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
 
+	float speed;
+	DirectX::XMVECTOR moveDir;
+
 private:
+
+	//I exist to be a change for a small merge to fix master.
+
+protected:
+
 	// World Matrix representing the entity’s current position, rotation, and scale
 	DirectX::XMFLOAT4X4 worldMatrix;
 
@@ -53,6 +65,11 @@ private:
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT3 rotation;
 	DirectX::XMFLOAT3 scale;
+
+	// Velocity, direction, and Max Speed for movement of entities
+	DirectX::XMFLOAT3 velocity;
+	DirectX::XMFLOAT3 direction;
+	float maxSpeed;
 
 	// Boolean for if the world matrix needs to be recalculated
 	bool isWorldDirty;

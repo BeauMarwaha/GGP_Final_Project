@@ -1,4 +1,5 @@
 #include "EntityManager.h"
+#include "Player.h"
 
 // For the C++ standard library
 using namespace std;
@@ -124,7 +125,7 @@ void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, D
 	}
 }
 
-void EntityManager::CreateEntity(string entityName, string meshName, string materialName)
+void EntityManager::CreateEntity(string entityName, string meshName, string materialName, EntityType type)
 {
 	// Ensure the specfied mesh exists
 	if (meshes.count(meshName) == 0)
@@ -138,14 +139,61 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 		throw "The specified material: " + materialName + " does not exist.";
 	}
 
-	// Create a new entity using the given mesh and material and assign it to the entity map
-	entities[entityName] = SmartEntity(
-		new Entity(
-			GetMesh(meshName), 
-			GetMaterial(materialName)
-		), 
-		meshName, 
-		materialName);
+	switch (type) {
+	case EntityType::Asteroid:
+		{
+			// Create a new asteroid using the given mesh and material and assign it to the entity map
+			entities[entityName] = SmartEntity(
+				new Asteroid(
+					GetMesh(meshName),
+					GetMaterial(materialName)
+				),
+				meshName,
+				materialName);
+		}
+		break;
+	case EntityType::Base:
+		{
+			// Create a new entity using the given mesh and material and assign it to the entity map
+			entities[entityName] = SmartEntity(
+				new Entity(
+					GetMesh(meshName),
+					GetMaterial(materialName)
+				),
+				meshName,
+				materialName);
+		}
+		break;
+	case EntityType::Bullet:
+		{
+			// Create a new bullet using the given mesh and material and assign it to the entity map
+			entities[entityName] = SmartEntity(
+				new Bullet(
+					GetMesh(meshName),
+					GetMaterial(materialName)
+				),
+				meshName,
+				materialName);
+			// Set the bullet's position and direction to be the same as the Player's
+			entities[entityName].entity->SetPosition(GetEntity("Player")->GetPosition());
+			entities[entityName].entity->SetDirection(GetEntity("Player")->GetDirection());
+		}
+		break;
+	case EntityType::Player:
+		{
+			// Create a new player using the given mesh and material and assign it to the entity map
+			entities[entityName] = SmartEntity(
+				new Player(
+					GetMesh(meshName),
+					GetMaterial(materialName)
+				),
+				meshName,
+				materialName);
+			Player* play = (Player*)GetEntity("Player");
+			play->SetEntityManager(this);
+		}
+		break;
+	}
 }
 
 void EntityManager::RemoveEntity(string entityName)
