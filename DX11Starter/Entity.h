@@ -48,12 +48,13 @@ public:
 	void Draw(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
 	void PrepareMaterial(DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
 
-protected:
 	float speed;
 	DirectX::XMVECTOR moveDir;
 
 private:
->>>>>>> movement
+
+protected:
+
 	// World Matrix representing the entity’s current position, rotation, and scale
 	DirectX::XMFLOAT4X4 worldMatrix;
 
