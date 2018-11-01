@@ -32,27 +32,43 @@ Player::~Player()
 
 void Player::Update(float deltaTime, float totalTime)
 {
-
 	if (GetAsyncKeyState('W') & 0x8000)
 	{
-		MoveForward(XMFLOAT3(0, 0, maxSpeed * deltaTime));
-	}
+		speed += .003f;
 
-	if (GetAsyncKeyState('S') & 0x8000)
+		if (speed >= 5.0f)
+		{
+
+			speed = 5.0f;
+
+		}
+	}
+	else if (GetAsyncKeyState('S') & 0x8000)
 	{
-		MoveForward(XMFLOAT3(0, 0, -maxSpeed * deltaTime));
+		speed -= .003f;
+
+		if (speed <= -5.0f)
+		{
+			speed = -5.0f;
+		}
+	}
+	else 
+	{
+		speed = 0.0f;
 	}
 
 	if (GetAsyncKeyState('A') & 0x8000)
 	{
-		RotateBy(XMFLOAT3(0, -maxSpeed * deltaTime, 0));
+		RotateBy(XMFLOAT3(0, -1 * abs(2.0F * deltaTime), 0));
 	}
-
 	if (GetAsyncKeyState('D') & 0x8000)
 	{
-		RotateBy(XMFLOAT3(0, maxSpeed * deltaTime, 0));
+		RotateBy(XMFLOAT3(0, abs(2.0F * deltaTime), 0));
 	}
 
+	MoveForward(XMFLOAT3(0, 0, speed * deltaTime), deltaTime);
+
+	// Shoot a bullet if the user hits space bar
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
 	{
 		Shoot(totalTime);
