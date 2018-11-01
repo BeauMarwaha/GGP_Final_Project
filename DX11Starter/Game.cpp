@@ -21,6 +21,7 @@ Game::Game(HINSTANCE hInstance)
 		true)			   // Show extra stats (fps) in title bar?
 {
 	// Initialize fields
+	
 	mouseDown = false;
 	camera = new Camera(width, height);
 	debugCameraEnabled = false;
@@ -29,6 +30,7 @@ Game::Game(HINSTANCE hInstance)
 
 	// Set the game state to the debug scene
 	state = GameState::Debug;
+	currentScene = SceneState::Main;
 
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
@@ -51,8 +53,14 @@ Game::~Game()
 	// Delete the entity manager
 	delete entityManager;
 
+	// Delete the menu manager
+	delete menuManager;
+
 	// delete the font
 	delete font;
+
+	// Delete the sprite batch
+	delete spriteBatch;
 }
 
 // --------------------------------------------------------
@@ -61,8 +69,10 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
-	// Create font
 	font = new SpriteFont(device, L"resources/fonts/MenuFont.spritefont");
+	menuManager = new MenuManager(font);
+	// Initialize SpriteBatch
+	spriteBatch = new SpriteBatch(context);
 
 	// Helper methods for initialization based on game state
 	switch (state)
@@ -245,65 +255,68 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
-	// Switch between normal and debug camera modes when the ` key is pressed
-	static bool currentPress = false;
-	if (GetAsyncKeyState(0xC0) & 0x8000)
+	if (currentScene == SceneState::Game)
 	{
-		if (!currentPress)
+		// Switch between normal and debug camera modes when the ` key is pressed
+		static bool currentPress = false;
+		if (GetAsyncKeyState(0xC0) & 0x8000)
 		{
-			debugCameraEnabled = !debugCameraEnabled;
+			if (!currentPress)
+			{
+				debugCameraEnabled = !debugCameraEnabled;
+			}
+			currentPress = true;
 		}
-		currentPress = true;
+		else
+		{
+			currentPress = false;
+		}
+
+		// Movement for the player entity
+		Entity* player = entityManager->GetEntity("Player");
+		if (&player != nullptr)
+		{
+			// Set movement rate
+			float speed = 5.0;
+
+			if (GetAsyncKeyState('W') & 0x8000)
+			{
+				player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime));
+			}
+
+			if (GetAsyncKeyState('S') & 0x8000)
+			{
+				player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime));
+			}
+
+			if (GetAsyncKeyState('A') & 0x8000)
+			{
+				player->RotateBy(XMFLOAT3(0, -speed * deltaTime, 0));
+			}
+
+			if (GetAsyncKeyState('D') & 0x8000)
+			{
+				player->RotateBy(XMFLOAT3(0, speed * deltaTime, 0));
+			}
+		}
+
+		// Update the game based on the current game state
+		switch (state)
+		{
+		case GameState::Debug:
+			DebugUpdate(deltaTime, totalTime);
+			break;
+		case GameState::Game:
+			GameUpdate(deltaTime, totalTime);
+			break;
+		}
+
+		// Update the camera
+		camera->Update(deltaTime, totalTime, entityManager->GetEntity("Player"), debugCameraEnabled);
+
+		// Update all entities
+		entityManager->UpdateEntities(deltaTime, totalTime);
 	}
-	else
-	{
-		currentPress = false;
-	}
-
-	// Movement for the player entity
-	Entity* player = entityManager->GetEntity("Player");
-	if (&player != nullptr)
-	{
-		// Set movement rate
-		float speed = 5.0;
-
-		if (GetAsyncKeyState('W') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime));
-		}
-
-		if (GetAsyncKeyState('S') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime));
-		}
-
-		if (GetAsyncKeyState('A') & 0x8000)
-		{
-			player->RotateBy(XMFLOAT3(0, -speed * deltaTime, 0));
-		}
-
-		if (GetAsyncKeyState('D') & 0x8000)
-		{
-			player->RotateBy(XMFLOAT3(0, speed * deltaTime, 0));
-		}
-	}
-
-	// Update the game based on the current game state
-	switch (state)
-	{
-	case GameState::Debug:
-		DebugUpdate(deltaTime, totalTime);
-		break;
-	case GameState::Game:
-		GameUpdate(deltaTime, totalTime);
-		break;
-	}
-
-	// Update the camera
-	camera->Update(deltaTime, totalTime, entityManager->GetEntity("Player"), debugCameraEnabled);
-
-	// Update all entities
-	entityManager->UpdateEntities(deltaTime, totalTime);
 }
 
 void Game::GameUpdate(float deltaTime, float totalTime)
@@ -373,7 +386,14 @@ void Game::Draw(float deltaTime, float totalTime)
 		0);
 
 	// Draw each entity with lighting
-	entityManager->DrawEntities(context, camera, lights, _countof(lights));
+	if (currentScene == SceneState::Game)
+	{
+		entityManager->DrawEntities(context, camera, lights, _countof(lights));
+	}
+	else
+	{
+		menuManager->DisplayMainMenu(spriteBatch);
+	}
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it
