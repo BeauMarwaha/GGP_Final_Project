@@ -4,8 +4,8 @@
 // For the DirectX Math library
 using namespace DirectX;
 
-Asteroid::Asteroid(Mesh* m, Material* mat):
-	Entity(m , mat)
+Asteroid::Asteroid(Mesh* m, Material* mat, int type):
+	Entity(m , mat, type)
 {
 	maxSpeed = 1;
 

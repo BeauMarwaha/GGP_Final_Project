@@ -3,8 +3,8 @@
 // For the DirectX Math library
 using namespace DirectX;
 
-Bullet::Bullet(Mesh* m, Material* mat) :
-	Entity(m, mat)
+Bullet::Bullet(Mesh* m, Material* mat, int type) :
+	Entity(m, mat, type)
 {
 	maxSpeed = 6;
 

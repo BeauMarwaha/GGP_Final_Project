@@ -4,8 +4,8 @@
 // For the DirectX Math library
 using namespace DirectX;
 
-Player::Player(Mesh* m, Material* mat) :
-	Entity(m, mat)
+Player::Player(Mesh* m, Material* mat, int type) :
+	Entity(m, mat, type)
 {
 	maxSpeed = 5;
 

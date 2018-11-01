@@ -102,6 +102,16 @@ void EntityManager::UpdateEntities(float deltaTime, float totalTime)
 			if (CheckForCollision(entity.second.entity, other.second.entity))
 			{
 				// TODO: Handle Collision
+				if (entity.second.entity->GetType() == (int)EntityType::Asteroid)
+				{
+					if (other.second.entity->GetType() == (int)EntityType::Bullet)
+					{
+						// Bullet vs. Asteroid Collision -- Destroy both of them
+						RemoveEntity(entity.first);
+						RemoveEntity(other.first);
+						return;
+					}
+				}
 				//cout << entity.first << " is colliding with " << other.first << endl;
 			}
 		}
@@ -146,7 +156,8 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 			entities[entityName] = SmartEntity(
 				new Asteroid(
 					GetMesh(meshName),
-					GetMaterial(materialName)
+					GetMaterial(materialName),
+					(int)EntityType::Asteroid
 				),
 				meshName,
 				materialName);
@@ -158,7 +169,8 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 			entities[entityName] = SmartEntity(
 				new Entity(
 					GetMesh(meshName),
-					GetMaterial(materialName)
+					GetMaterial(materialName),
+					(int)EntityType::Base
 				),
 				meshName,
 				materialName);
@@ -170,7 +182,8 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 			entities[entityName] = SmartEntity(
 				new Bullet(
 					GetMesh(meshName),
-					GetMaterial(materialName)
+					GetMaterial(materialName),
+					(int)EntityType::Bullet
 				),
 				meshName,
 				materialName);
@@ -185,7 +198,8 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 			entities[entityName] = SmartEntity(
 				new Player(
 					GetMesh(meshName),
-					GetMaterial(materialName)
+					GetMaterial(materialName),
+					(int)EntityType::Player
 				),
 				meshName,
 				materialName);

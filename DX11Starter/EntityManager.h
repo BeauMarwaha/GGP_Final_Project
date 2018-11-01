@@ -13,6 +13,7 @@
 #include "DirectionalLight.h"
 #include "WICTextureLoader.h"
 
+
 enum class EntityType
 {
 	Base = 1,
@@ -20,6 +21,8 @@ enum class EntityType
 	Asteroid = 3,
 	Bullet = 4
 };
+
+
 
 #pragma region Smart Structs
 // Struct representing a smart entity

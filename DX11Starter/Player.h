@@ -10,7 +10,7 @@ class Player :
 	public Entity
 {
 public:
-	Player(Mesh* m, Material* mat);
+	Player(Mesh* m, Material* mat, int type);
 	~Player();
 
 	// Update the player

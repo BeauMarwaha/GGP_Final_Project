@@ -9,7 +9,7 @@ class Asteroid :
 	public Entity
 {
 public:
-	Asteroid(Mesh* m, Material* mat);
+	Asteroid(Mesh* m, Material* mat, int type);
 	~Asteroid();
 
 	// Update the asteroid

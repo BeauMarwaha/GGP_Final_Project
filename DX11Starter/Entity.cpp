@@ -3,11 +3,12 @@
 // For the DirectX Math library
 using namespace DirectX;
 
-Entity::Entity(Mesh* mesh, Material* material)
+Entity::Entity(Mesh* mesh, Material* material, int type)
 {
 	// Use the passed in mesh and material
 	this->mesh = mesh;
 	this->material = material;
+	this->type = type;
 
 	// Set the location and movement vectors and matrix to default values
 	position = XMFLOAT3(0, 0, 0);
@@ -119,6 +120,11 @@ DirectX::XMFLOAT3 Entity::GetDirection()
 float Entity::GetMaxSpeed()
 {
 	return maxSpeed;
+}
+
+int Entity::GetType()
+{
+	return type;
 }
 
 Collider Entity::GetCollider()

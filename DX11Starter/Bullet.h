@@ -10,7 +10,7 @@ class Bullet :
 	public Entity
 {
 public:
-	Bullet(Mesh* m, Material* mat);
+	Bullet(Mesh* m, Material* mat, int type);
 	~Bullet();
 
 	// Update the bullet

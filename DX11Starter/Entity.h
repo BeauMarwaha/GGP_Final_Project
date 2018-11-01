@@ -11,7 +11,7 @@
 class Entity
 {
 public:
-	Entity(Mesh* mesh, Material* material); // Constructor
+	Entity(Mesh* mesh, Material* material, int type); // Constructor
 	Entity(Entity const& other); // Copy Constructor
 	Entity& operator=(Entity const& other); // Copy Assignment Operator
 	bool operator==(Entity const& other);
@@ -28,6 +28,7 @@ public:
 	DirectX::XMFLOAT3 GetVelocity();
 	DirectX::XMFLOAT3 GetDirection();
 	float GetMaxSpeed();
+	int GetType();
 	Collider GetCollider();
 	Mesh* GetMesh();
 
@@ -82,5 +83,8 @@ protected:
 
 	// Entity Collider
 	Collider collider;
+
+	// Entity Type
+	int type;
 };
 
