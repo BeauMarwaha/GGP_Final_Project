@@ -428,6 +428,14 @@ void Game::OnMouseUp(WPARAM buttonState, int x, int y)
 {
 	mouseDown = false;
 
+	switch (currentScene)
+	{
+		case SceneState::Main:
+			if (menuManager->DetectStartClick(x, y)) currentScene = SceneState::Game;
+			if (menuManager->DetectQuitClick(x, y)) Quit();
+			break;
+	}
+
 	// We don't care about the tracking the cursor outside
 	// the window anymore (we're not dragging if the mouse is up)
 	ReleaseCapture();

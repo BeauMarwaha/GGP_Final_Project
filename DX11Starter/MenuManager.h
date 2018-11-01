@@ -24,6 +24,7 @@ public:
 	MenuManager(DirectX::SpriteFont * _font);
 	~MenuManager();
 	void DisplayMainMenu(DirectX::SpriteBatch * spriteBatch);
-	void ClickButton(float xPos, float yPos);
+	bool DetectStartClick(float xPos, float yPos);
+	bool DetectQuitClick(float xPos, float yPos);
 };
 
