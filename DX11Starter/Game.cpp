@@ -385,14 +385,19 @@ void Game::Draw(float deltaTime, float totalTime)
 		1.0f,
 		0);
 
-	// Draw each entity with lighting
-	if (currentScene == SceneState::Game)
+	
+	switch (currentScene)
 	{
-		entityManager->DrawEntities(context, camera, lights, _countof(lights));
-	}
-	else
-	{
-		menuManager->DisplayMainMenu(spriteBatch);
+		case SceneState::Game:
+			// Draw each entity with lighting
+			entityManager->DrawEntities(context, camera, lights, _countof(lights));
+			break;
+		case SceneState::Main:
+			menuManager->DisplayMainMenu(spriteBatch);
+			break;
+		case SceneState::GameOver:
+			menuManager->DisplayGameOverMenu(spriteBatch);
+			break;
 	}
 
 	// Present the back buffer to the user
@@ -432,6 +437,10 @@ void Game::OnMouseUp(WPARAM buttonState, int x, int y)
 	{
 		case SceneState::Main:
 			if (menuManager->DetectStartClick(x, y)) currentScene = SceneState::Game;
+			if (menuManager->DetectQuitClick(x, y)) Quit();
+			break;
+		
+		case SceneState::GameOver:
 			if (menuManager->DetectQuitClick(x, y)) Quit();
 			break;
 	}

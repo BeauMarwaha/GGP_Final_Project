@@ -24,6 +24,7 @@ public:
 	MenuManager(DirectX::SpriteFont * _font);
 	~MenuManager();
 	void DisplayMainMenu(DirectX::SpriteBatch * spriteBatch);
+	void DisplayGameOverMenu(DirectX::SpriteBatch * spriteBatch);
 	bool DetectStartClick(float xPos, float yPos);
 	bool DetectQuitClick(float xPos, float yPos);
 };

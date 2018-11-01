@@ -34,6 +34,18 @@ void MenuManager::DisplayMainMenu(DirectX::SpriteBatch * spriteBatch)
 	spriteBatch->End();
 }
 
+void MenuManager::DisplayGameOverMenu(DirectX::SpriteBatch * spriteBatch)
+{
+	spriteBatch->Begin();
+	const wchar_t* title = L"Game Over!";
+	XMFLOAT2 titleOrigin;
+	XMStoreFloat2(&titleOrigin, font->MeasureString(title) / 2.f);
+	font->DrawString(spriteBatch, title, XMFLOAT2(600, 200), Colors::White, 0.f, titleOrigin);
+	font->DrawString(spriteBatch, quitButton.text, quitButton.pos, Colors::White, 0.f, quitButton.origin);
+
+	spriteBatch->End();
+}
+
 bool MenuManager::DetectStartClick(float xPos, float yPos)
 {
 	return ((xPos > (startButton.pos.x - (startButton.size.x / 2.f))
