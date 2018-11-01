@@ -44,6 +44,9 @@
     <ClCompile Include="Collider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MenuManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Asteroid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -86,6 +89,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Collider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Asteroid.h">

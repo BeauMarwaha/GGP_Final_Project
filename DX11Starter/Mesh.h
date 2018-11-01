@@ -53,6 +53,7 @@ private:
 	// Integer specifying how many indices are in the mesh's index buffer
 	int indexCount = 0;
 
+
 	// A collider for the base geometry of the mesh
 	// Think of this as the base collider that entites base their own colliders on
 	// Each entity of a given mesh is given a copy of this collider to modify

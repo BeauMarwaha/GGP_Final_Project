@@ -5,13 +5,21 @@
 #include "Camera.h"
 #include "DirectionalLight.h"
 #include "EntityManager.h"
+#include "MenuManager.h"
 #include <DirectXMath.h>
+#include <SpriteFont.h>
+#include <SpriteBatch.h>
 #include <vector>
 
 enum class GameState
 {
 	Debug = 1,
 	Game = 2
+};
+enum class SceneState {
+	Main = 1,
+	Game = 2,
+	GameOver = 3
 };
 
 class Game 
@@ -38,6 +46,9 @@ private:
 	// Current Game State
 	GameState state;
 
+	// Current Game Scene
+	SceneState currentScene;
+
 	// Initialization helper methods
 	void CreateLights();
 	void CreateEntities();
@@ -50,6 +61,12 @@ private:
 	void GameUpdate(float deltaTime, float totalTime);
 	void DebugUpdate(float deltaTime, float totalTime);
 
+	// Menu Font
+	DirectX::SpriteFont * font;
+
+	// SpriteBatch for rendering menus
+	DirectX::SpriteBatch * spriteBatch;
+
 	// FPS camera
 	Camera* camera;
 
@@ -58,6 +75,9 @@ private:
 
 	// Entity Manager
 	EntityManager* entityManager;
+
+	// Menu Manager
+	MenuManager * menuManager;
 
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.

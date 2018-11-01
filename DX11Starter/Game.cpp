@@ -22,13 +22,16 @@ Game::Game(HINSTANCE hInstance)
 		true)			   // Show extra stats (fps) in title bar?
 {
 	// Initialize fields
+	
 	mouseDown = false;
 	camera = new Camera(width, height);
 	debugCameraEnabled = false;
 	entityManager = new EntityManager();
+	
 
 	// Set the game state to the debug scene
 	state = GameState::Game;
+	currentScene = SceneState::Game;
 
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
@@ -50,6 +53,15 @@ Game::~Game()
 
 	// Delete the entity manager
 	delete entityManager;
+
+	// Delete the menu manager
+	delete menuManager;
+
+	// delete the font
+	delete font;
+
+	// Delete the sprite batch
+	delete spriteBatch;
 }
 
 // --------------------------------------------------------
@@ -58,6 +70,10 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
+	font = new SpriteFont(device, L"resources/fonts/MenuFont.spritefont");
+	menuManager = new MenuManager(font);
+	// Initialize SpriteBatch
+	spriteBatch = new SpriteBatch(context);
 	// Seed the random 
 	srand((unsigned)time(0));
 
@@ -248,37 +264,68 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
-	// Switch between normal and debug camera modes when the ` key is pressed
-	static bool currentPress = false;
-	if (GetAsyncKeyState(0xC0) & 0x8000)
+	if (currentScene == SceneState::Game)
 	{
-		if (!currentPress)
+		// Switch between normal and debug camera modes when the ` key is pressed
+		static bool currentPress = false;
+		if (GetAsyncKeyState(0xC0) & 0x8000)
 		{
-			debugCameraEnabled = !debugCameraEnabled;
+			if (!currentPress)
+			{
+				debugCameraEnabled = !debugCameraEnabled;
+			}
+			currentPress = true;
 		}
-		currentPress = true;
-	}
-	else
-	{
-		currentPress = false;
-	}
+		else
+		{
+			currentPress = false;
+		}
 
-	// Update the game based on the current game state
-	switch (state)
-	{
-	case GameState::Debug:
-		DebugUpdate(deltaTime, totalTime);
-		break;
-	case GameState::Game:
-		GameUpdate(deltaTime, totalTime);
-		break;
+		// Movement for the player entity
+		Entity* player = entityManager->GetEntity("Player");
+		if (&player != nullptr)
+		{
+			// Set movement rate
+			float speed = 5.0;
+
+			if (GetAsyncKeyState('W') & 0x8000)
+			{
+				player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime), 0);
+			}
+
+			if (GetAsyncKeyState('S') & 0x8000)
+			{
+				player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime), 0);
+			}
+
+			if (GetAsyncKeyState('A') & 0x8000)
+			{
+				player->RotateBy(XMFLOAT3(0, -speed * deltaTime, 0));
+			}
+
+			if (GetAsyncKeyState('D') & 0x8000)
+			{
+				player->RotateBy(XMFLOAT3(0, speed * deltaTime, 0));
+			}
+		}
+
+		// Update the game based on the current game state
+		switch (state)
+		{
+		case GameState::Debug:
+			DebugUpdate(deltaTime, totalTime);
+			break;
+		case GameState::Game:
+			GameUpdate(deltaTime, totalTime);
+			break;
+		}
+
+		// Update the camera
+		camera->Update(deltaTime, totalTime, entityManager->GetEntity("Player"), debugCameraEnabled);
+
+		// Update all entities
+		entityManager->UpdateEntities(deltaTime, totalTime);
 	}
-
-	// Update the camera
-	camera->Update(deltaTime, totalTime, entityManager->GetEntity("Player"), debugCameraEnabled);
-
-	// Update all entities
-	entityManager->UpdateEntities(deltaTime, totalTime);
 }
 
 void Game::GameUpdate(float deltaTime, float totalTime)
@@ -347,8 +394,20 @@ void Game::Draw(float deltaTime, float totalTime)
 		1.0f,
 		0);
 
-	// Draw each entity with lighting
-	entityManager->DrawEntities(context, camera, lights, _countof(lights));
+	
+	switch (currentScene)
+	{
+		case SceneState::Game:
+			// Draw each entity with lighting
+			entityManager->DrawEntities(context, camera, lights, _countof(lights));
+			break;
+		case SceneState::Main:
+			menuManager->DisplayMainMenu(spriteBatch);
+			break;
+		case SceneState::GameOver:
+			menuManager->DisplayGameOverMenu(spriteBatch);
+			break;
+	}
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it
@@ -382,6 +441,22 @@ void Game::OnMouseDown(WPARAM buttonState, int x, int y)
 void Game::OnMouseUp(WPARAM buttonState, int x, int y)
 {
 	mouseDown = false;
+
+	switch (currentScene)
+	{
+		case SceneState::Main:
+			if (menuManager->DetectStartClick(x, y))
+			{
+				context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				currentScene = SceneState::Game;
+			}
+			if (menuManager->DetectQuitClick(x, y)) Quit();
+			break;
+		
+		case SceneState::GameOver:
+			if (menuManager->DetectQuitClick(x, y)) Quit();
+			break;
+	}
 
 	// We don't care about the tracking the cursor outside
 	// the window anymore (we're not dragging if the mouse is up)
