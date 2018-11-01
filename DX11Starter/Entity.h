@@ -53,6 +53,8 @@ public:
 
 private:
 
+	//I exist to be a change for a small merge to fix master.
+
 protected:
 
 	// World Matrix representing the entity’s current position, rotation, and scale
