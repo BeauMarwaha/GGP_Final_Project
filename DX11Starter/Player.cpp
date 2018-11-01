@@ -58,6 +58,10 @@ void Player::Update(float deltaTime, float totalTime)
 		Shoot(totalTime);
 	}
 
+	// Update the direction of the player based on rotation
+	XMFLOAT3 orig = XMFLOAT3(0, 0, 1);
+	XMStoreFloat3(&direction, XMVector3Rotate(XMLoadFloat3(&orig), XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&rotation))));
+
 	Entity::Update(deltaTime, totalTime);
 }
 

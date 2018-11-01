@@ -8,6 +8,9 @@ Bullet::Bullet(Mesh* m, Material* mat) :
 {
 	maxSpeed = 6;
 
+	// Set scale smaller
+	scale = XMFLOAT3(.5f, .5f, .5f);
+
 	// Position and Direction are set by EntityManager to match the player's at the time of firing
 	
 	// Make sure to normalize the direction
@@ -26,6 +29,9 @@ Bullet::~Bullet()
 
 void Bullet::Update(float deltaTime, float totalTime)
 {
+	// Calculate the velocity of the bullet
+	XMStoreFloat3(&velocity, XMLoadFloat3(&direction) * maxSpeed);
+
 	XMStoreFloat3(&position, (XMLoadFloat3(&position) + XMLoadFloat3(&velocity)* deltaTime));
 	// Set the world matrix to dirty so that it updates
 	isWorldDirty = true;

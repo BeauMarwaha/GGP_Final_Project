@@ -14,7 +14,7 @@ Entity::Entity(Mesh* mesh, Material* material)
 	rotation = XMFLOAT3(0, 0, 0);
 	scale = XMFLOAT3(1, 1, 1);
 	velocity = XMFLOAT3(0, 0, 0);
-	direction = XMFLOAT3(1, 0, 0);
+	direction = XMFLOAT3(0, 0, 1);
 	maxSpeed = 0;
 
 	worldMatrix = GetIdentityMatrix();
@@ -77,6 +77,7 @@ void Entity::Update(float deltaTime, float totalTime)
 			XMMatrixScaling(scale.x, scale.y, scale.z)*
 			XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z) *
 			XMMatrixTranslation(position.x, position.y, position.z));
+		
 
 		isWorldDirty = false;
 	}
