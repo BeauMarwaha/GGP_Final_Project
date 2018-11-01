@@ -268,27 +268,63 @@ void Game::Update(float deltaTime, float totalTime)
 	if (&player != nullptr)
 	{
 		// Set movement rate
-		float speed = 5.0;
+		//float speed = 5.0;
 
-		if (GetAsyncKeyState('W') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime));
+		if (GetAsyncKeyState('W') & 0x8000 || GetAsyncKeyState('S') & 0x8000) {
+			if (GetAsyncKeyState('W') & 0x8000)
+			{
+
+				player->speed += .003f;
+
+				if (player->speed >= 5.0f)
+				{
+
+					player->speed = 5.0f;
+
+				}
+
+				//player->MoveForward(XMFLOAT3(0, 0, player->speed * deltaTime));
+			}
+
+			if (GetAsyncKeyState('S') & 0x8000)
+			{
+
+				player->speed -= .003f;
+
+				if (player->speed <= -5.0f)
+				{
+
+					player->speed = -5.0f;
+
+				}
+
+				//player->MoveForward(XMFLOAT3(0, 0, player->speed * deltaTime));
+			}
 		}
-
-		if (GetAsyncKeyState('S') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime));
+		else {
+		
+			player->speed = 0.0f;
+		
 		}
 
 		if (GetAsyncKeyState('A') & 0x8000)
 		{
-			player->RotateBy(XMFLOAT3(0, -speed * deltaTime, 0));
+			player->RotateBy(XMFLOAT3(0, -1 * abs(2.0F * deltaTime), 0));
 		}
 
 		if (GetAsyncKeyState('D') & 0x8000)
 		{
-			player->RotateBy(XMFLOAT3(0, speed * deltaTime, 0));
+			player->RotateBy(XMFLOAT3(0, abs(2.0F * deltaTime), 0));
 		}
+
+		/*
+		XMVECTOR initialPos = XMLoadFloat3(&player->GetPosition());
+		player->moveDir = player->moveDir + XMVector3Rotate(XMLoadFloat3(&XMFLOAT3(0, 0, player->speed * deltaTime)), XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&player->GetRotation())));
+		XMStoreFloat3(&player->GetPosition(), initialPos + player->moveDir);
+		*/
+
+		player->MoveForward(XMFLOAT3(0, 0, player->speed * deltaTime), deltaTime);
+
 	}
 
 	// Update the game based on the current game state

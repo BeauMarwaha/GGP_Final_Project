@@ -19,6 +19,9 @@ Entity::Entity(Mesh* mesh, Material* material)
 
 	worldMatrix = GetIdentityMatrix();
 
+	speed = 0.0f;
+	moveDir = XMVECTOR();
+
 	// Assign the default collider from the mesh to the entity
 	this->collider = mesh->GetCollider(ColliderKey());
 	
@@ -167,12 +170,36 @@ void Entity::Move(XMFLOAT3 direction, XMFLOAT3 velocity)
 	XMStoreFloat3(&position, initialPos + movement);
 }
 
-void Entity::MoveForward(XMFLOAT3 velocity)
+void Entity::MoveForward(XMFLOAT3 velocity, float dTime)
 {
 	isWorldDirty = true;
 	XMVECTOR initialPos = XMLoadFloat3(&position);
-	XMVECTOR movement = XMVector3Rotate(XMLoadFloat3(&velocity), XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&rotation)));
-	XMStoreFloat3(&position, initialPos + movement);
+
+	moveDir += XMVector3Rotate(XMLoadFloat3(&velocity), XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&rotation)));
+	
+	float length;
+	XMStoreFloat(&length, XMVector3Length(moveDir));
+
+	//printf("length: %4.2fw X: %4.2f Z: %4.2f \n", length, position.x, position.z);
+
+	if (abs(length) > 5.0f * dTime) {
+
+		if (length > 1.0 * dTime) {
+		
+			moveDir = XMVector3Normalize(moveDir) * 5 * dTime;
+		
+		}
+		//not hitting the negative
+		if (length < -1.0) {
+
+			moveDir = XMVector3Normalize(moveDir) * -5 * dTime;
+
+		}
+	
+	}
+
+	XMStoreFloat3(&position, initialPos + moveDir);
+
 }
 
 void Entity::RotateBy(DirectX::XMFLOAT3 deltaRotation)
