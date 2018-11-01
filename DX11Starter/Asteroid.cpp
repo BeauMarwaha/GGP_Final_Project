@@ -1,3 +1,4 @@
+
 #include "Asteroid.h"
 
 // For the DirectX Math library
