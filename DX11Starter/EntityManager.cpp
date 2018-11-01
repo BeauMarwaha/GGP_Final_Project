@@ -124,7 +124,7 @@ void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, D
 	}
 }
 
-void EntityManager::CreateEntity(string entityName, string meshName, string materialName)
+void EntityManager::CreateEntity(string entityName, string meshName, string materialName, EntityType type)
 {
 	// Ensure the specfied mesh exists
 	if (meshes.count(meshName) == 0)
@@ -138,14 +138,48 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 		throw "The specified material: " + materialName + " does not exist.";
 	}
 
-	// Create a new entity using the given mesh and material and assign it to the entity map
-	entities[entityName] = SmartEntity(
-		new Entity(
-			GetMesh(meshName), 
-			GetMaterial(materialName)
-		), 
-		meshName, 
-		materialName);
+	switch (type) {
+	case EntityType::Asteroid:
+		// Create a new entity using the given mesh and material and assign it to the entity map
+		entities[entityName] = SmartEntity(
+			new Asteroid(
+				GetMesh(meshName),
+				GetMaterial(materialName)
+			),
+			meshName,
+			materialName);
+		break;
+	case EntityType::Base:
+		// Create a new entity using the given mesh and material and assign it to the entity map
+		entities[entityName] = SmartEntity(
+			new Entity(
+				GetMesh(meshName),
+				GetMaterial(materialName)
+			),
+			meshName,
+			materialName);
+		break;
+	case EntityType::Bullet:
+		// Create a new entity using the given mesh and material and assign it to the entity map
+		entities[entityName] = SmartEntity(
+			new Entity(
+				GetMesh(meshName),
+				GetMaterial(materialName)
+			),
+			meshName,
+			materialName);
+		break;
+	case EntityType::Player:
+		// Create a new entity using the given mesh and material and assign it to the entity map
+		entities[entityName] = SmartEntity(
+			new Entity(
+				GetMesh(meshName),
+				GetMaterial(materialName)
+			),
+			meshName,
+			materialName);
+		break;
+	}
 }
 
 void EntityManager::RemoveEntity(string entityName)
