@@ -140,44 +140,57 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 
 	switch (type) {
 	case EntityType::Asteroid:
-		// Create a new entity using the given mesh and material and assign it to the entity map
-		entities[entityName] = SmartEntity(
-			new Asteroid(
-				GetMesh(meshName),
-				GetMaterial(materialName)
-			),
-			meshName,
-			materialName);
+		{
+			// Create a new asteroid using the given mesh and material and assign it to the entity map
+			entities[entityName] = SmartEntity(
+				new Asteroid(
+					GetMesh(meshName),
+					GetMaterial(materialName)
+				),
+				meshName,
+				materialName);
+		}
 		break;
 	case EntityType::Base:
-		// Create a new entity using the given mesh and material and assign it to the entity map
-		entities[entityName] = SmartEntity(
-			new Entity(
-				GetMesh(meshName),
-				GetMaterial(materialName)
-			),
-			meshName,
-			materialName);
+		{
+			// Create a new entity using the given mesh and material and assign it to the entity map
+			entities[entityName] = SmartEntity(
+				new Entity(
+					GetMesh(meshName),
+					GetMaterial(materialName)
+				),
+				meshName,
+				materialName);
+		}
 		break;
 	case EntityType::Bullet:
-		// Create a new entity using the given mesh and material and assign it to the entity map
-		entities[entityName] = SmartEntity(
-			new Entity(
-				GetMesh(meshName),
-				GetMaterial(materialName)
-			),
-			meshName,
-			materialName);
+		{
+			// Create a new bullet using the given mesh and material and assign it to the entity map
+			entities[entityName] = SmartEntity(
+				new Bullet(
+					GetMesh(meshName),
+					GetMaterial(materialName)
+				),
+				meshName,
+				materialName);
+			// Set the bullet's position and direction to be the same as the Player's
+			entities[entityName].entity->SetPosition(GetEntity("Player")->GetPosition());
+			entities[entityName].entity->SetDirection(GetEntity("Player")->GetDirection());
+		}
 		break;
 	case EntityType::Player:
-		// Create a new entity using the given mesh and material and assign it to the entity map
-		entities[entityName] = SmartEntity(
-			new Entity(
-				GetMesh(meshName),
-				GetMaterial(materialName)
-			),
-			meshName,
-			materialName);
+		{
+			// Create a new player using the given mesh and material and assign it to the entity map
+			entities[entityName] = SmartEntity(
+				new Player(
+					GetMesh(meshName),
+					GetMaterial(materialName)
+				),
+				meshName,
+				materialName);
+			Player* play = (Player*)GetEntity("Player");
+			play->SetEntityManager(this);
+		}
 		break;
 	}
 }

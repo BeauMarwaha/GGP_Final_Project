@@ -154,6 +154,11 @@ void Entity::SetScale(XMFLOAT3 scale)
 	collider.SetRadius(collider.GetRadius() * max(scale.x, scale.z));
 }
 
+void Entity::SetDirection(DirectX::XMFLOAT3 direction)
+{
+	this->direction = direction;
+}
+
 void Entity::SetMesh(Mesh* mesh)
 {
 	this->mesh = mesh;

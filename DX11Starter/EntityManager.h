@@ -4,6 +4,8 @@
 #include <iostream>
 #include "Entity.h"
 #include "Asteroid.h"
+#include "Player.h"
+#include "Bullet.h"
 #include "Mesh.h"
 #include "Material.h"
 #include "Camera.h"

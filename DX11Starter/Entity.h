@@ -36,6 +36,7 @@ public:
 	void SetPosition(DirectX::XMFLOAT3 position);
 	void SetRotation(DirectX::XMFLOAT3 rotation);
 	void SetScale(DirectX::XMFLOAT3 scale);
+	void SetDirection(DirectX::XMFLOAT3 direction);
 	void SetMesh(Mesh* mesh);
 
 	// Entity Transform Methods

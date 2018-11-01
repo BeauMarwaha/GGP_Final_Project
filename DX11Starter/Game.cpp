@@ -263,34 +263,6 @@ void Game::Update(float deltaTime, float totalTime)
 		currentPress = false;
 	}
 
-	// Movement for the player entity
-	Entity* player = entityManager->GetEntity("Player");
-	if (&player != nullptr)
-	{
-		// Set movement rate
-		float speed = 5.0;
-
-		if (GetAsyncKeyState('W') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime));
-		}
-
-		if (GetAsyncKeyState('S') & 0x8000)
-		{
-			player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime));
-		}
-
-		if (GetAsyncKeyState('A') & 0x8000)
-		{
-			player->RotateBy(XMFLOAT3(0, -speed * deltaTime, 0));
-		}
-
-		if (GetAsyncKeyState('D') & 0x8000)
-		{
-			player->RotateBy(XMFLOAT3(0, speed * deltaTime, 0));
-		}
-	}
-
 	// Update the game based on the current game state
 	switch (state)
 	{
