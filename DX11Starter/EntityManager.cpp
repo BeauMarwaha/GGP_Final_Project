@@ -89,7 +89,7 @@ EntityManager::~EntityManager()
 	names.clear();
 }
 
-void EntityManager::UpdateEntities(float deltaTime, float totalTime)
+bool EntityManager::UpdateEntities(float deltaTime, float totalTime)
 {
 	// Run the update method on all entities
 	for (auto& entity : entities)
@@ -109,13 +109,22 @@ void EntityManager::UpdateEntities(float deltaTime, float totalTime)
 						// Bullet vs. Asteroid Collision -- Destroy both of them
 						RemoveEntity(entity.first);
 						RemoveEntity(other.first);
-						return;
+						return false;
+					}
+				}
+				if (entity.second.entity->GetType() == (int)EntityType::Player)
+				{
+					if (other.second.entity->GetType() == (int)EntityType::Asteroid)
+					{
+						// Player vs. Asteroid Collision -- signal to change scenes
+						return true;
 					}
 				}
 				//cout << entity.first << " is colliding with " << other.first << endl;
 			}
 		}
 	}
+	return false;
 }
 
 void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[], int lightCount)

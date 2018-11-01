@@ -324,7 +324,7 @@ void Game::Update(float deltaTime, float totalTime)
 		camera->Update(deltaTime, totalTime, entityManager->GetEntity("Player"), debugCameraEnabled);
 
 		// Update all entities
-		entityManager->UpdateEntities(deltaTime, totalTime);
+		if (entityManager->UpdateEntities(deltaTime, totalTime)) currentScene = SceneState::GameOver;
 	}
 }
 

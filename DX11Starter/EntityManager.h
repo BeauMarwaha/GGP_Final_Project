@@ -137,7 +137,10 @@ public:
 	~EntityManager(); // Deconstructor
 
 	// Runs the update method on all entities
-	void UpdateEntities(float deltaTime, float totalTime);
+	// returns a bool if we should change scenes
+	// janky and should probably change but for now
+	// its ok
+	bool UpdateEntities(float deltaTime, float totalTime);
 
 	// Draws all entities with lighting
 	void DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[], int lightCount);
