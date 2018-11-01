@@ -18,7 +18,7 @@ public:
 	~Entity(); // Destructor
 
 	// Updates the game object
-	void Update(float deltaTime, float totalTime);
+	void virtual Update(float deltaTime, float totalTime);
 
 	// GET methods
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
