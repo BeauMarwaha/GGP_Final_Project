@@ -30,7 +30,7 @@ Game::Game(HINSTANCE hInstance)
 
 	// Set the game state to the debug scene
 	state = GameState::Debug;
-	currentScene = SceneState::Main;
+	currentScene = SceneState::Game;
 
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
@@ -436,7 +436,11 @@ void Game::OnMouseUp(WPARAM buttonState, int x, int y)
 	switch (currentScene)
 	{
 		case SceneState::Main:
-			if (menuManager->DetectStartClick(x, y)) currentScene = SceneState::Game;
+			if (menuManager->DetectStartClick(x, y))
+			{
+				context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				currentScene = SceneState::Game;
+			}
 			if (menuManager->DetectQuitClick(x, y)) Quit();
 			break;
 		
