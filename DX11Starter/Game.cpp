@@ -166,6 +166,9 @@ void Game::CreateEntities()
 	entityManager->CreateEntity("Player", "Cone_Mesh", "Cliff_Normal_Material", EntityType::Player);
 	entityManager->CreateEntity("Asteroid1", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
 	entityManager->CreateEntity("Asteroid2", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
 }
 
 // --------------------------------------------------------

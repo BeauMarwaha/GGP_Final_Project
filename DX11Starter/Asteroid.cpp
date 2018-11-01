@@ -10,10 +10,10 @@ Asteroid::Asteroid(Mesh* m, Material* mat, int type):
 	maxSpeed = 1;
 
 	// Set a random position
-	position = XMFLOAT3(rand() % 10, 0, rand() % 10);
+	position = XMFLOAT3(rand() % 10 - 5, 0, rand() % 10 - 5);
 
 	// Set a random direction and drift speed that become the velocity
-	direction = XMFLOAT3(rand() % 10, 0, rand() % 10);
+	direction = XMFLOAT3(rand() % 10 - 5, 0, rand() % 10 - 5);
 	// Make sure to normalize the direction
 	XMVECTOR tempDir = XMVector3Normalize(XMLoadFloat3(&direction));
 

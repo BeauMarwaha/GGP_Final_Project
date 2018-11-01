@@ -32,6 +32,7 @@ void MenuManager::DisplayMainMenu(DirectX::SpriteBatch * spriteBatch)
 	font->DrawString(spriteBatch, quitButton.text, quitButton.pos, Colors::White, 0.f, quitButton.origin);
 
 	spriteBatch->End();
+	//TODO: Reset blend state and rasterizer state and depth stencil state
 }
 
 void MenuManager::DisplayGameOverMenu(DirectX::SpriteBatch * spriteBatch)

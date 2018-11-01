@@ -109,7 +109,9 @@ bool EntityManager::UpdateEntities(float deltaTime, float totalTime)
 						// Bullet vs. Asteroid Collision -- Destroy both of them
 						RemoveEntity(entity.first);
 						RemoveEntity(other.first);
-						return false;
+
+						/*if (meshes[entities[entity.first].meshName].refCount <= 0) return true;
+						else*/ return false;
 					}
 				}
 				if (entity.second.entity->GetType() == (int)EntityType::Player)
