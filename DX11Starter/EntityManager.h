@@ -1,10 +1,11 @@
 #pragma once
+#ifndef EntityManager_Included
+#define EntityManager_Included
 
 #include <map>
 #include <iostream>
 #include "Entity.h"
 #include "Asteroid.h"
-#include "Player.h"
 #include "Bullet.h"
 #include "Mesh.h"
 #include "Material.h"
@@ -206,3 +207,4 @@ private:
 	bool CheckForCollision(Entity * entity1, Entity * entity2);
 	#pragma endregion
 };
+#endif

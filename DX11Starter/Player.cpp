@@ -20,7 +20,7 @@ Player::Player(Mesh* m, Material* mat) :
 
 	// Initialize shooting vars
 	canShoot = true;
-	coolDown = 3.0f;
+	coolDown = 1.0f;
 	lastShot = 0.0f;
 }
 

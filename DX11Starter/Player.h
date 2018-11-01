@@ -34,4 +34,3 @@ private:
 	float coolDown;
 	float lastShot;
 };
-

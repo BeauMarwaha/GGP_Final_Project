@@ -61,7 +61,7 @@ protected:
 	// Velocity, direction, and Max Speed for movement of entities
 	DirectX::XMFLOAT3 velocity;
 	DirectX::XMFLOAT3 direction;
-	int maxSpeed;
+	float maxSpeed;
 
 	// Boolean for if the world matrix needs to be recalculated
 	bool isWorldDirty;

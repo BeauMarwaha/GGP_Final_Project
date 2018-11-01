@@ -18,7 +18,7 @@ Asteroid::Asteroid(Mesh* m, Material* mat):
 
 	XMStoreFloat3(&direction, tempDir);
 
-	XMStoreFloat3(&velocity, tempDir * (float)(rand() % maxSpeed + 1));
+	XMStoreFloat3(&velocity, tempDir * (float)(rand() % (int)maxSpeed + 1));
 
 }
 

@@ -1,4 +1,5 @@
 #include "EntityManager.h"
+#include "Player.h"
 
 // For the C++ standard library
 using namespace std;
