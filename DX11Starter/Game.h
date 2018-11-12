@@ -43,6 +43,12 @@ public:
 	void OnMouseWheel(float wheelDelta,   int x, int y);
 
 private:
+	// NEEDS TO BE MOVED IF WORKS
+	ID3D11RasterizerState * rasState = NULL;
+	ID3D11BlendState * blendState = NULL;
+	float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	UINT blendMask = 0xffffffff;
+
 	// Current Game State
 	GameState state;
 

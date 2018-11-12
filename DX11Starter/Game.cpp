@@ -31,7 +31,7 @@ Game::Game(HINSTANCE hInstance)
 
 	// Set the game state to the debug scene
 	state = GameState::Game;
-	currentScene = SceneState::Game;
+	currentScene = SceneState::Main;
 
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
@@ -76,6 +76,9 @@ void Game::Init()
 	spriteBatch = new SpriteBatch(context);
 	// Seed the random 
 	srand((unsigned)time(0));
+
+	/*context->RSGetState(&rasState);
+	context->OMGetBlendState(&blendState, blendFactor, blendMask);*/
 
 	// Helper methods for initialization based on game state
 	switch (state)
@@ -451,6 +454,42 @@ void Game::OnMouseUp(WPARAM buttonState, int x, int y)
 			if (menuManager->DetectStartClick(x, y))
 			{
 				context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				// test making a new rasterizer state
+				
+				D3D11_RASTERIZER_DESC rasDesc;
+				ZeroMemory(&rasDesc, sizeof(D3D11_RASTERIZER_DESC));
+
+				rasDesc.FillMode = D3D11_FILL_SOLID;
+				rasDesc.CullMode = D3D11_CULL_BACK;
+				rasDesc.FrontCounterClockwise = true;
+
+				device->CreateRasterizerState(&rasDesc, &rasState);
+				context->RSSetState(rasState);
+
+				// test making new blend state
+				D3D11_BLEND_DESC blendDesc;
+				ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
+
+				D3D11_RENDER_TARGET_BLEND_DESC rtbd;
+				ZeroMemory(&rtbd, sizeof(rtbd));
+
+				rtbd.BlendEnable = true;
+				rtbd.SrcBlend = D3D11_BLEND_SRC_COLOR;
+				rtbd.DestBlend = D3D11_BLEND_BLEND_FACTOR;
+				rtbd.BlendOp = D3D11_BLEND_OP_ADD;
+				rtbd.SrcBlendAlpha = D3D11_BLEND_ONE;
+				rtbd.DestBlendAlpha = D3D11_BLEND_ZERO;
+				rtbd.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+				rtbd.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+				blendDesc.AlphaToCoverageEnable = false;
+				blendDesc.RenderTarget[0] = rtbd;
+
+				device->CreateBlendState(&blendDesc, &blendState);
+
+				//blendDesc.RenderTarget
+				//context->OMSetBlendState(blendState, blendFactor, blendMask);
+
 				currentScene = SceneState::Game;
 			}
 			if (menuManager->DetectQuitClick(x, y)) Quit();
