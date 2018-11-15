@@ -2,6 +2,8 @@
 #include "Vertex.h"
 #include <ctime> 
 
+#include "DDSTextureLoader.h"
+
 // For the DirectX Math library
 using namespace DirectX;
 
@@ -54,6 +56,8 @@ Game::~Game()
 	// Delete the entity manager
 	delete entityManager;
 
+	// Delete the sky
+
 	// Delete the menu manager
 	delete menuManager;
 
@@ -87,6 +91,7 @@ void Game::Init()
 	case GameState::Game:
 		CreateLights();
 		CreateEntities();
+		CreateSky();
 		break;
 	}
 
@@ -169,6 +174,31 @@ void Game::CreateEntities()
 	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
 	entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
 	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
+}
+
+void Game::CreateSky()
+{
+	skyVS = new SimpleVertexShader(device, context);
+	skyVS->LoadShaderFile(L"VertexShaderSky.cso");
+
+	skyPS = new SimplePixelShader(device, context);
+	skyPS->LoadShaderFile(L"PixelShaderSky.cso");
+
+	// Texture
+	CreateDDSTextureFromFile(device, context, L"resources/textures/skybox/SpaceCubeMap.dds", 0, &skySRV);
+
+	// Rasterizer state for drawing the inside of my sky box geometry
+	D3D11_RASTERIZER_DESC rs = {};
+	rs.FillMode = D3D11_FILL_SOLID;
+	rs.CullMode = D3D11_CULL_FRONT; // Reverse culling mode to be front-side so we see the interior of the skybox
+	rs.DepthClipEnable = true;
+	device->CreateRasterizerState(&rs, &skyRastState);
+
+	D3D11_DEPTH_STENCIL_DESC ds = {};
+	ds.DepthEnable = true;
+	ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	ds.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; // Make the depth to be the max value always
+	device->CreateDepthStencilState(&ds, &skyDepthState);
 }
 
 // --------------------------------------------------------

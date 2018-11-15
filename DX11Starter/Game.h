@@ -49,9 +49,17 @@ private:
 	// Current Game Scene
 	SceneState currentScene;
 
+	// Sky stuff
+	SimpleVertexShader* skyVS;
+	SimplePixelShader* skyPS;
+	ID3D11ShaderResourceView* skySRV;
+	ID3D11RasterizerState* skyRastState;
+	ID3D11DepthStencilState* skyDepthState;
+
 	// Initialization helper methods
 	void CreateLights();
 	void CreateEntities();
+	void CreateSky();
 
 	// Initialization Debug helper methods
 	void CreateDebugLights();
