@@ -20,7 +20,7 @@ Player::Player(Mesh* m, Material* mat, int type) :
 
 	// Initialize shooting vars
 	canShoot = true;
-	coolDown = 1.0f;
+	coolDown = 0.5f;
 	lastShot = 0.0f;
 }
 
@@ -91,7 +91,7 @@ void Player::Shoot(float totalTime)
 	if (canShoot)
 	{
 		// Shoot
-		entityManager->CreateEntity("Bullet"+numBullets, "Sphere_Mesh", "Snow_Material", EntityType::Bullet);
+		entityManager->CreateEntity("Bullet_" + std::to_string(numBullets), "Bullet_Mesh", "Bullet_Material", EntityType::Bullet);
 
 		numBullets++;
 

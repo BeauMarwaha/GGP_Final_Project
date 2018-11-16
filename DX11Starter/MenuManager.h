@@ -25,7 +25,7 @@ public:
 	~MenuManager();
 	void DisplayMainMenu(DirectX::SpriteBatch * spriteBatch);
 	void DisplayGameOverMenu(DirectX::SpriteBatch * spriteBatch);
-	bool DetectStartClick(float xPos, float yPos);
-	bool DetectQuitClick(float xPos, float yPos);
+	bool DetectStartClick(int xPos, int yPos);
+	bool DetectQuitClick(int xPos, int yPos);
 };
 
