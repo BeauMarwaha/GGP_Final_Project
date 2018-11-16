@@ -49,7 +49,11 @@ private:
 	// Current Game Scene
 	SceneState currentScene;
 
+	// Needed for sampling options (like filter and address modes)
+	ID3D11SamplerState* sampler;
+
 	// Sky stuff
+	Mesh* skyMesh; // separate mesh to track specifically for skybox and not entities
 	SimpleVertexShader* skyVS;
 	SimplePixelShader* skyPS;
 	ID3D11ShaderResourceView* skySRV;
@@ -68,6 +72,9 @@ private:
 	// Update methods unique to game states
 	void GameUpdate(float deltaTime, float totalTime);
 	void DebugUpdate(float deltaTime, float totalTime);
+
+	// Draw method unique to Skybox
+	void DrawSky();
 
 	// Menu Font
 	DirectX::SpriteFont * font;

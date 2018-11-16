@@ -56,7 +56,14 @@ Game::~Game()
 	// Delete the entity manager
 	delete entityManager;
 
-	// Delete the sky
+	// Delete the sky stuff
+	sampler->Release();
+	skySRV->Release();
+	skyDepthState->Release();
+	skyRastState->Release();
+	delete skyVS;
+	delete skyPS;
+	delete skyMesh;
 
 	// Delete the menu manager
 	delete menuManager;
@@ -87,6 +94,7 @@ void Game::Init()
 	case GameState::Debug:
 		CreateDebugLights();
 		CreateDebugEntities();
+		CreateSky();
 		break;
 	case GameState::Game:
 		CreateLights();
@@ -165,6 +173,7 @@ void Game::CreateEntities()
 
 	// Load geometry
 	entityManager->CreateMesh("Sphere_Mesh", device, "resources/models/sphere.obj");
+	//entityManager->CreateMesh("Cube_Mesh", device, "resources/models/cube.obj"); -- can use for when buildings make it in
 	entityManager->CreateMesh("Cone_Mesh", device, "resources/models/cone.obj");
 
 	// Create entities using the previously set up resources
@@ -176,6 +185,11 @@ void Game::CreateEntities()
 	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
 }
 
+// --------------------------------------------------------
+// Loads Vertex and Pixel shaders for the skybox
+// Creates the Cubemap Texture
+// Sets up a Rasterizer state and a Depth Stencil state for the skybox
+// --------------------------------------------------------
 void Game::CreateSky()
 {
 	skyVS = new SimpleVertexShader(device, context);
@@ -183,6 +197,20 @@ void Game::CreateSky()
 
 	skyPS = new SimplePixelShader(device, context);
 	skyPS->LoadShaderFile(L"PixelShaderSky.cso");
+
+	// Track a cube mesh separately from other meshes so its specific to the skybox and not entities
+	skyMesh = new Mesh(device, "resources/models/cube.obj");
+
+	// Define the anisotropic filtering sampler description
+	D3D11_SAMPLER_DESC samplerDesc = {}; // Zero out all values initially
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the U axis
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the V axis
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the W axis
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC; // Use Anisotropic filtering
+	samplerDesc.MaxAnisotropy = 16; // Use x16 anisotropy
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX; // This value needs to be higher than 0 for mipmapping to work
+	// Ask DirectX for the actual object
+	device->CreateSamplerState(&samplerDesc, &sampler);
 
 	// Texture
 	CreateDDSTextureFromFile(device, context, L"resources/textures/skybox/SpaceCubeMap.dds", 0, &skySRV);
@@ -397,6 +425,49 @@ void Game::DebugUpdate(float deltaTime, float totalTime)
 }
 
 // --------------------------------------------------------
+// Draws the skybox which includes
+//  -Setting up the sky render states
+//  -Getting the buffers for the mesh used
+//  -Setting the buffers and passing in the camera matrices
+//  -Sending in the texture info
+//  -Actually drawing the sky
+// --------------------------------------------------------
+void Game::DrawSky()
+{
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+	// Set up sky render states using the variables we initialized earlier
+	context->RSSetState(skyRastState);
+	context->OMSetDepthStencilState(skyDepthState, 0);
+
+	// After drawing all of our regular (solid) objects, draw the sky!
+	ID3D11Buffer* skyVB = skyMesh->GetVertexBuffer();
+	ID3D11Buffer* skyIB = skyMesh->GetIndexBuffer();
+
+	// Set the buffers
+	context->IASetVertexBuffers(0, 1, &skyVB, &stride, &offset);
+	context->IASetIndexBuffer(skyIB, DXGI_FORMAT_R32_UINT, 0);
+
+	// Send in the view and projection matrices, don't need the world for the skybox
+	skyVS->SetMatrix4x4("view", camera->GetViewMatrix());
+	skyVS->SetMatrix4x4("projection", camera->GetProjectionMatrix());
+
+	skyVS->CopyAllBufferData();
+	skyVS->SetShader();
+
+	// Send texture-related stuff
+	skyPS->SetShaderResourceView("SkyTextureBase", skySRV);
+	skyPS->SetSamplerState("basicSampler", sampler);
+
+	skyPS->CopyAllBufferData(); // Remember to copy to the GPU!!!!
+	skyPS->SetShader();
+
+	// Finally do the actual drawing
+	context->DrawIndexed(skyMesh->GetIndexCount(), 0, 0);
+}
+
+// --------------------------------------------------------
 // Handle resizing DirectX "stuff" to match the new window size.
 // For instance, updating our projection matrix's aspect ratio.
 // --------------------------------------------------------
@@ -441,6 +512,13 @@ void Game::Draw(float deltaTime, float totalTime)
 			menuManager->DisplayGameOverMenu(spriteBatch);
 			break;
 	}
+
+	// Draw the sky after you finish drawing opaque objects
+	DrawSky();
+
+	// Reset any changed render states!
+	context->RSSetState(0);
+	context->OMSetDepthStencilState(0, 0);
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it

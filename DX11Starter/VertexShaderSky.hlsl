@@ -6,7 +6,6 @@
 // - The name of the cbuffer itself is unimportant
 cbuffer externalData : register(b0)
 {
-	matrix world;
 	matrix view;
 	matrix projection;
 };
@@ -24,6 +23,9 @@ struct VertexShaderInput
 	//  |    |                |
 	//  v    v                v
 	float3 position		: POSITION;     // XYZ position
+	float2 uv			: TEXCOORD;     // Won't use any of these after position, but we need to match the vertex def
+	float3 normal		: NORMAL;
+	float3 tangent		: TANGENT;
 };
 
 // Struct representing the data we're sending down the pipeline
@@ -42,10 +44,26 @@ struct VertexToPixel
 	float3 direction	: TEXCOORD;     // XYZ direction 
 };
 
-float4 main(VertexShaderInput input) : SV_POSITION
+VertexToPixel main(VertexShaderInput input)
 {
-	// Pass float3 position of the vertex into direction output to pixel shader
+	// Set up output struct
+	VertexToPixel output;
 
-	// Multiply position from the input by the world matrix
-	return pos;
+	// Adjust the view matrix to have no translation so that the sky is always centered
+	matrix viewSky = view;
+	viewSky._41 = 0;
+	viewSky._42 = 0;
+	viewSky._43 = 0;
+
+	// Multiply position from the input by the proj and view matrix to get new pos for output
+	matrix viewProj = mul(viewSky, projection);
+	output.position = mul(float4(input.position, 1), viewProj);
+
+	// Push the vertex out to the far clip plane (Z of 1)
+	output.position.z = output.position.w; // Z gets divided by W automatically
+
+	// Pass float3 position of the vertex into direction output to pixel shader
+	output.direction = input.position;
+
+	return output;
 }
