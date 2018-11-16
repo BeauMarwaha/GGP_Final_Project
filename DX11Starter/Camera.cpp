@@ -99,12 +99,12 @@ void Camera::Move(float deltaTime, Entity* player, bool debugCameraEnabled)
 	XMStoreFloat4(&playerForward, newForward);
 
 	// Have the camera sit slightly above and behind the player
-	position.x = player->GetPosition().x - (playerForward.x * 2);
-	position.y = player->GetPosition().y + 0.5f;	
-	position.z = player->GetPosition().z - (playerForward.z * 2);
+	position.x = player->GetPosition().x - (playerForward.x * 10);
+	position.y = player->GetPosition().y + 3.0f;	
+	position.z = player->GetPosition().z - (playerForward.z * 10);
 
 	// Have the rotation follow the player
-	xRotation = player->GetRotation().x;
+	xRotation = player->GetRotation().x + .3f;
 	yRotation = fmod(player->GetRotation().y, PI * 2);
 }
 

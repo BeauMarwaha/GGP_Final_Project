@@ -6,7 +6,7 @@ using namespace DirectX;
 Bullet::Bullet(Mesh* m, Material* mat, int type) :
 	Entity(m, mat, type)
 {
-	maxSpeed = 6;
+	maxSpeed = 25;
 
 	// Set scale smaller
 	scale = XMFLOAT3(.5f, .5f, .5f);

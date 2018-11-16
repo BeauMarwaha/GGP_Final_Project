@@ -198,8 +198,18 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 				),
 				meshName,
 				materialName);
-			// Set the bullet's position and direction to be the same as the Player's
-			entities[entityName].entity->SetPosition(GetEntity("Player")->GetPosition());
+
+			// Set the bullet's position to be slightly in front of the Player and direction to be the same as the Player's
+			XMMATRIX rotation = XMMatrixRotationRollPitchYaw(GetEntity("Player")->GetRotation().x, GetEntity("Player")->GetRotation().y, 0);
+			XMFLOAT4 forward = XMFLOAT4(0, 0, 1, 0);
+			XMVECTOR newForward = XMVector4Transform(XMLoadFloat4(&forward), rotation);
+			XMFLOAT4 playerForward = XMFLOAT4(0, 0, 1, 0);
+			XMStoreFloat4(&playerForward, newForward);
+
+			XMFLOAT3 initialPosition = GetEntity("Player")->GetPosition();
+			initialPosition.x += playerForward.x * 3;
+			initialPosition.z += playerForward.z * 3;
+			entities[entityName].entity->SetPosition(initialPosition);
 			entities[entityName].entity->SetDirection(GetEntity("Player")->GetDirection());
 		}
 		break;

@@ -116,13 +116,13 @@ void Game::CreateLights()
 {
 	// Set up the directional light sources
 	lights[0].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
-	lights[0].DiffuseColor = XMFLOAT4(0, 0, 1, 1);
+	lights[0].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
 	lights[0].Direction = XMFLOAT3(1, -1, 0);
 	lights[1].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
-	lights[1].DiffuseColor = XMFLOAT4(0, 1, 0, 1);
+	lights[1].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
 	lights[1].Direction = XMFLOAT3(-1, 1, 0);
 	lights[2].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
-	lights[2].DiffuseColor = XMFLOAT4(1, 0, 0, 1);
+	lights[2].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
 	lights[2].Direction = XMFLOAT3(-1, -1, 0);
 	lights[3].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
 	lights[3].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
@@ -144,15 +144,19 @@ void Game::CreateLights()
 void Game::CreateEntities()
 {
 	// Create the vertex shaders
+	entityManager->CreateVertexShader("Default_Vertex_Shader", device, context, L"VertexShader.cso");
 	entityManager->CreateVertexShader("Normals_Vertex_Shader", device, context, L"VertexShaderNormals.cso");
 
 	// Create the pixel shaders
+	entityManager->CreatePixelShader("Default_Pixel_Shader", device, context, L"PixelShader.cso");
 	entityManager->CreatePixelShader("Normals_Pixel_Shader", device, context, L"PixelShaderNormals.cso");
 
 	// Create the rock shader resource view
 	entityManager->CreateShaderResourceView("Cliff_Texture", device, context, L"resources/textures/CliffLayered_bc.tif");
 	entityManager->CreateShaderResourceView("Cliff_Normal_Texture", device, context, L"resources/textures/CliffLayered_normal.tif");
-	entityManager->CreateShaderResourceView("Snow_Texture", device, context, L"resources/textures/Snow_bc.jpg");
+	entityManager->CreateShaderResourceView("SpaceShip_Texture", device, context, L"resources/textures/SpaceShip/SpaceShip_bc.png");
+	entityManager->CreateShaderResourceView("SpaceShip_Normal_Texture", device, context, L"resources/textures/SpaceShip/SpaceShip_normal.png");
+	entityManager->CreateShaderResourceView("Bullet_Texture", device, context, L"resources/textures/Bullet_bc.png");
 
 	// Define the anisotropic filtering sampler description
 	D3D11_SAMPLER_DESC samplerDesc = {}; // Zero out all values initially
@@ -166,23 +170,24 @@ void Game::CreateEntities()
 	// Create the anisotropic filtering sampler state
 	entityManager->CreateSamplerState("Anisotropic_Sampler", device, samplerDesc);
 
-	// Create the rock material using the previously set up resources
+	// Create materials using the previously set up resources
 	entityManager->CreateMaterialWithNormal("Cliff_Normal_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "Cliff_Texture", "Cliff_Normal_Texture", "Anisotropic_Sampler");
-	// Create the snow material using the previously set up resources
-	entityManager->CreateMaterial("Snow_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "Snow_Texture", "Anisotropic_Sampler");
+	entityManager->CreateMaterialWithNormal("SpaceShip_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "SpaceShip_Texture", "SpaceShip_Normal_Texture", "Anisotropic_Sampler");
+	entityManager->CreateMaterial("Bullet_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Bullet_Texture", "Anisotropic_Sampler");
 
 	// Load geometry
 	entityManager->CreateMesh("Sphere_Mesh", device, "resources/models/sphere.obj");
+	entityManager->CreateMesh("SpaceShip_Mesh", device, "resources/models/SpaceShip.obj");
+	entityManager->CreateMesh("Bullet_Mesh", device, "resources/models/bullet.obj");
 	//entityManager->CreateMesh("Cube_Mesh", device, "resources/models/cube.obj"); -- can use for when buildings make it in
-	entityManager->CreateMesh("Cone_Mesh", device, "resources/models/cone.obj");
 
 	// Create entities using the previously set up resources
-	entityManager->CreateEntity("Player", "Cone_Mesh", "Cliff_Normal_Material", EntityType::Player);
-	entityManager->CreateEntity("Asteroid1", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid2", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Player", "SpaceShip_Mesh", "SpaceShip_Material", EntityType::Player);
+	entityManager->CreateEntity("Asteroid1", "Sphere_Mesh", "Cliff_Normal_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid2", "Sphere_Mesh", "Cliff_Normal_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Cliff_Normal_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Cliff_Normal_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Cliff_Normal_Material", EntityType::Asteroid);
 }
 
 // --------------------------------------------------------
@@ -347,26 +352,27 @@ void Game::Update(float deltaTime, float totalTime)
 		if (&player != nullptr)
 		{
 			// Set movement rate
-			float speed = 5.0;
+			static float moveSpeed = 5.0;
+			static float turnSpeed = 1.0;
 
 			if (GetAsyncKeyState('W') & 0x8000)
 			{
-				player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime), 0);
+				player->MoveForward(XMFLOAT3(0, 0, moveSpeed * deltaTime), 0);
 			}
 
 			if (GetAsyncKeyState('S') & 0x8000)
 			{
-				player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime), 0);
+				player->MoveForward(XMFLOAT3(0, 0, -moveSpeed * deltaTime), 0);
 			}
 
 			if (GetAsyncKeyState('A') & 0x8000)
 			{
-				player->RotateBy(XMFLOAT3(0, -speed * deltaTime, 0));
+				player->RotateBy(XMFLOAT3(0, -turnSpeed * deltaTime, 0));
 			}
 
 			if (GetAsyncKeyState('D') & 0x8000)
 			{
-				player->RotateBy(XMFLOAT3(0, speed * deltaTime, 0));
+				player->RotateBy(XMFLOAT3(0, turnSpeed * deltaTime, 0));
 			}
 		}
 
@@ -385,7 +391,11 @@ void Game::Update(float deltaTime, float totalTime)
 		camera->Update(deltaTime, totalTime, entityManager->GetEntity("Player"), debugCameraEnabled);
 
 		// Update all entities
-		if (entityManager->UpdateEntities(deltaTime, totalTime)) currentScene = SceneState::GameOver;
+		bool playerCollision = entityManager->UpdateEntities(deltaTime, totalTime);
+		if (playerCollision)
+		{
+			//currentScene = SceneState::GameOver;
+		}
 	}
 }
 

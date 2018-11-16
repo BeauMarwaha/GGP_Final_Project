@@ -47,7 +47,7 @@ void MenuManager::DisplayGameOverMenu(DirectX::SpriteBatch * spriteBatch)
 	spriteBatch->End();
 }
 
-bool MenuManager::DetectStartClick(float xPos, float yPos)
+bool MenuManager::DetectStartClick(int xPos, int yPos)
 {
 	return ((xPos > (startButton.pos.x - (startButton.size.x / 2.f))
 		&& (xPos < startButton.pos.x + (startButton.size.x / 2.f)))
@@ -55,7 +55,7 @@ bool MenuManager::DetectStartClick(float xPos, float yPos)
 		&& (yPos < startButton.pos.y + (startButton.size.y / 2.f)))));
 }
 
-bool MenuManager::DetectQuitClick(float xPos, float yPos)
+bool MenuManager::DetectQuitClick(int xPos, int yPos)
 {
 	return ((xPos >(quitButton.pos.x - (quitButton.size.x / 2.f))
 		&& (xPos < quitButton.pos.x + (quitButton.size.x / 2.f)))
