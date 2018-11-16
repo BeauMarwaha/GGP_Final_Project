@@ -12,7 +12,7 @@
 #include "Camera.h"
 #include "DirectionalLight.h"
 #include "WICTextureLoader.h"
-
+#include "DDSTextureLoader.h"
 
 enum class EntityType
 {
@@ -21,8 +21,6 @@ enum class EntityType
 	Asteroid = 3,
 	Bullet = 4
 };
-
-
 
 #pragma region Smart Structs
 // Struct representing a smart entity
@@ -170,6 +168,7 @@ public:
 
 	// Shader Resource View Helper Methods
 	void CreateShaderResourceView(std::string shaderResourceViewName, ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile);
+	void CreateInteriorMappingDDSShaderResourceView(std::string shaderResourceViewName, ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile);
 	void RemoveShaderResourceView(std::string shaderResourceViewName);
 
 	// Sampler State Helper Methods
