@@ -504,18 +504,20 @@ void Game::Draw(float deltaTime, float totalTime)
 		case SceneState::Game:
 			// Draw each entity with lighting
 			entityManager->DrawEntities(context, camera, lights, _countof(lights));
+			// Draw the sky after you finish drawing opaque objects
+			DrawSky();
 			break;
 		case SceneState::Main:
+			// Draw the sky after you finish drawing opaque objects
+			DrawSky();
 			menuManager->DisplayMainMenu(spriteBatch);
 			break;
 		case SceneState::GameOver:
+			// Draw the sky after you finish drawing opaque objects
+			DrawSky();
 			menuManager->DisplayGameOverMenu(spriteBatch);
 			break;
 	}
-
-	// Draw the sky after you finish drawing opaque objects
-	DrawSky();
-
 	// Reset any changed render states!
 	context->RSSetState(0);
 	context->OMSetDepthStencilState(0, 0);
