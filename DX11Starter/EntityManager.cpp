@@ -129,7 +129,7 @@ bool EntityManager::UpdateEntities(float deltaTime, float totalTime)
 	return false;
 }
 
-void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[], int lightCount)
+void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[], int lightCount, ID3D11ShaderResourceView* skySRV)
 {
 	// Draws all entities with lighting
 	for (auto& entity : entities)
@@ -140,6 +140,16 @@ void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, D
 			"lights", // The name of the variable in the shader
 			lights, // The address of the data to copy
 			sizeof(DirectionalLight) * lightCount); // The size of the data to copy
+
+		// If this is the interior mapping material pass in unique pixel shader data
+		if (entity.second.materialName == "InteriorMapping_Material")
+		{
+			pixelShader->SetShaderResourceView("SkyCube", skySRV);
+			pixelShader->SetFloat3("CameraPosition", camera->GetPosition());
+			pixelShader->SetFloat("Offices", 10);
+			pixelShader->SetInt("NumCubeMaps", 8);
+			pixelShader->SetInt("RandSeed", 11);
+		}
 
 		// Draw the entity
 		entity.second.entity->Draw(context, camera->GetViewMatrix(), camera->GetProjectionMatrix());

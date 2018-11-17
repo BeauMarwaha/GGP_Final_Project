@@ -192,7 +192,11 @@ void Game::CreateEntities()
 	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
 	entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
 	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Building_1", "Cube_Mesh", "InteriorMapping_Material", EntityType::Base);
+	entityManager->CreateEntity("Building_01", "Cube_Mesh", "InteriorMapping_Material", EntityType::Base);
+	
+	// Initial entity transform setup
+	entityManager->GetEntity("Building_01")->SetPosition(XMFLOAT3(0, 0, 30));
+	entityManager->GetEntity("Building_01")->SetUniformScale(25);
 }
 
 // --------------------------------------------------------
@@ -518,7 +522,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 		case SceneState::Game:
 			// Draw each entity with lighting
-			entityManager->DrawEntities(context, camera, lights, _countof(lights));
+			entityManager->DrawEntities(context, camera, lights, _countof(lights), skySRV);
 			// Draw the sky after you finish drawing opaque objects
 			DrawSky();
 			break;

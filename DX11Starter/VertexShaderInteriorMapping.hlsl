@@ -45,6 +45,8 @@ struct VertexToPixel
 	float4 position		: SV_POSITION;	// XYZW position (System Value Position)
 	float3 normal		: NORMAL;
 	float2 uv			: TEXCOORD;
+	float3 tangent		: TANGENT;
+	float3 worldPos		: POSITION; // The world position of this vertex
 };
 
 // --------------------------------------------------------
@@ -75,9 +77,17 @@ VertexToPixel main( VertexShaderInput input )
 	// screen and the distance (Z) from the camera (the "depth" of the pixel)
 	output.position = mul(float4(input.position, 1.0f), worldViewProj);
 
+	// Calculate the world position of this vertex (to be used
+	// in the pixel shader when we do point/spot lights)
+	output.worldPos = mul(float4(input.position, 1.0f), world).xyz;
+
 	// Convert the passed in normal to world space
 	// - In this case, however, transformations don't matter so we convert the 4X4 world matrix to a 3X3 before multiplying
 	output.normal = mul(input.normal, (float3x3)world);
+	output.normal = normalize(output.normal); // Make sure it's length is 1
+
+	// Make sure the tangent is in WORLD space and a unit vector
+	output.tangent = normalize(mul(input.tangent, (float3x3)world));
 
 	// Pass the vertex UV cordinates through to the pixel shader
 	output.uv = input.uv;

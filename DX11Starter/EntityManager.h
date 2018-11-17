@@ -141,7 +141,7 @@ public:
 	bool UpdateEntities(float deltaTime, float totalTime);
 
 	// Draws all entities with lighting
-	void DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[], int lightCount);
+	void DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[], int lightCount, ID3D11ShaderResourceView* skySRV);
 
 	#pragma region Public Helper Methods
 	// Entity Helper Methods

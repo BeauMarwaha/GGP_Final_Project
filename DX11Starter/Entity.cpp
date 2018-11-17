@@ -164,6 +164,16 @@ void Entity::SetScale(XMFLOAT3 scale)
 	collider.SetRadius(collider.GetRadius() * max(scale.x, scale.z));
 }
 
+void Entity::SetUniformScale(float scale)
+{
+	isWorldDirty = true;
+	this->scale = XMFLOAT3(scale, scale, scale);
+
+	// only scale in one direction as our circle is a circle, not an oval
+	// currently not working Do Not Attempt
+	collider.SetRadius(collider.GetRadius() * scale);
+}
+
 void Entity::SetDirection(DirectX::XMFLOAT3 direction)
 {
 	this->direction = direction;
