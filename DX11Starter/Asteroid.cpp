@@ -10,7 +10,19 @@ Asteroid::Asteroid(Mesh* m, Material* mat, int type):
 	maxSpeed = 1;
 
 	// Set a random position
-	position = XMFLOAT3(rand() % 10 - 5, 0, rand() % 10 - 5);
+	float x = 0;
+	float z = 0;
+	float minDist = 20;
+	float scale = 20;
+	do
+	{
+		x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) * 2 - 1;
+		x *= scale;
+		z = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) * 2 - 1;
+		z *= scale;
+	} while ((x < minDist && x > -minDist) && (z < minDist && z > -minDist));
+
+	position = XMFLOAT3(x, 0, z);
 
 	// Set a random direction and drift speed that become the velocity
 	direction = XMFLOAT3(rand() % 10 - 5, 0, rand() % 10 - 5);

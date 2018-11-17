@@ -419,7 +419,7 @@ void Game::Update(float deltaTime, float totalTime)
 		bool playerCollision = entityManager->UpdateEntities(deltaTime, totalTime);
 		if (playerCollision)
 		{
-			//currentScene = SceneState::GameOver; // DISABLED until asteroid spawn radius can be adjusted
+			currentScene = SceneState::GameOver;
 		}
 	}
 }
