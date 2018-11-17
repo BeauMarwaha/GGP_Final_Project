@@ -14,12 +14,7 @@ Camera::Camera(unsigned int width, unsigned int height)
 	speed = 5;
 
 	// Set the initial projection matrix
-	XMMATRIX P = XMMatrixPerspectiveFovLH(
-		0.25f * PI,	// Field of View Angle
-		(float)width / height,	// Aspect ratio
-		0.1f,				  	// Near clip plane distance
-		100.0f);			  	// Far clip plane distance
-	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(P)); // Transpose for HLSL!
+	ResizeWindow(width, height);
 }
 
 
@@ -132,7 +127,7 @@ void Camera::ResizeWindow(unsigned int width, unsigned int height)
 		0.25f * PI,	// Field of View Angle
 		(float)width / height,	// Aspect ratio
 		0.1f,				  	// Near clip plane distance
-		100.0f);			  	// Far clip plane distance
+		500.0f);			  	// Far clip plane distance
 	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(P)); // Transpose for HLSL!
 }
 

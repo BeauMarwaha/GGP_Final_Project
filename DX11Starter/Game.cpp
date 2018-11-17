@@ -192,11 +192,27 @@ void Game::CreateEntities()
 	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
 	entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
 	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Building_01", "Cube_Mesh", "InteriorMapping_Material", EntityType::Base);
-	
-	// Initial entity transform setup
-	entityManager->GetEntity("Building_01")->SetPosition(XMFLOAT3(0, 0, 30));
-	entityManager->GetEntity("Building_01")->SetUniformScale(25);
+
+	// Create buildings utilizing interior mapping and randomly place them on the outskitrs of the scene
+	for (int i = 0; i < 20; i++)
+	{
+		std::string name = "Building_" + std::to_string(i);
+		entityManager->CreateEntity(name, "Cube_Mesh", "InteriorMapping_Material", EntityType::Base);
+
+		float x = 0;
+		float z = 0;
+		float minDist = 100;
+		float scale = 100;
+		do
+		{
+			x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) * 2 - 1;
+			x *= scale;
+			z = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) * 2 - 1;
+			z *= scale;
+		} while ((x < minDist && x > -minDist) && (z < minDist && z > -minDist));
+		entityManager->GetEntity(name)->SetPosition(XMFLOAT3(x, 0, z));
+		entityManager->GetEntity(name)->SetUniformScale(rand() % 30 + 10);
+	}
 }
 
 // --------------------------------------------------------

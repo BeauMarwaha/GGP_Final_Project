@@ -146,9 +146,15 @@ void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, D
 		{
 			pixelShader->SetShaderResourceView("SkyCube", skySRV);
 			pixelShader->SetFloat3("CameraPosition", camera->GetPosition());
-			pixelShader->SetFloat("Offices", 10);
 			pixelShader->SetInt("NumCubeMaps", 8);
-			pixelShader->SetInt("RandSeed", 11);
+
+			// Base the number of offices off the current scale
+			pixelShader->SetFloat("Offices", (int)entity.second.entity->GetScale().x / 3);
+
+			// Base the room random generator seed off the building number
+			size_t last_index = entity.first.find_last_not_of("0123456789");
+			string result = entity.first.substr(last_index + 1);
+			pixelShader->SetInt("RandSeed", stoi(result));
 		}
 
 		// Draw the entity
