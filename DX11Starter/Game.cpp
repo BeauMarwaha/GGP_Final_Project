@@ -146,10 +146,12 @@ void Game::CreateEntities()
 	// Create the vertex shaders
 	entityManager->CreateVertexShader("Default_Vertex_Shader", device, context, L"VertexShader.cso");
 	entityManager->CreateVertexShader("Normals_Vertex_Shader", device, context, L"VertexShaderNormals.cso");
+	entityManager->CreateVertexShader("InteriorMapping_Vertex_Shader", device, context, L"VertexShaderInteriorMapping.cso");
 
 	// Create the pixel shaders
 	entityManager->CreatePixelShader("Default_Pixel_Shader", device, context, L"PixelShader.cso");
 	entityManager->CreatePixelShader("Normals_Pixel_Shader", device, context, L"PixelShaderNormals.cso");
+	entityManager->CreatePixelShader("InteriorMapping_Pixel_Shader", device, context, L"PixelShaderInteriorMapping.cso");
 
 	// Create the rock shader resource view
 	entityManager->CreateShaderResourceView("Cliff_Texture", device, context, L"resources/textures/CliffLayered_bc.tif");
@@ -157,6 +159,7 @@ void Game::CreateEntities()
 	entityManager->CreateShaderResourceView("SpaceShip_Texture", device, context, L"resources/textures/SpaceShip/SpaceShip_bc.png");
 	entityManager->CreateShaderResourceView("SpaceShip_Normal_Texture", device, context, L"resources/textures/SpaceShip/SpaceShip_normal.png");
 	entityManager->CreateShaderResourceView("Bullet_Texture", device, context, L"resources/textures/Bullet_bc.png");
+	entityManager->CreateInteriorMappingDDSShaderResourceView("InteriorMap_Texture", device, context, L"resources/textures/InteriorMaps/OfficeCubeMap.dds");
 
 	// Define the anisotropic filtering sampler description
 	D3D11_SAMPLER_DESC samplerDesc = {}; // Zero out all values initially
@@ -171,23 +174,45 @@ void Game::CreateEntities()
 	entityManager->CreateSamplerState("Anisotropic_Sampler", device, samplerDesc);
 
 	// Create materials using the previously set up resources
-	entityManager->CreateMaterialWithNormal("Cliff_Normal_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "Cliff_Texture", "Cliff_Normal_Texture", "Anisotropic_Sampler");
+	entityManager->CreateMaterialWithNormal("Asteroid_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "Cliff_Texture", "Cliff_Normal_Texture", "Anisotropic_Sampler");
 	entityManager->CreateMaterialWithNormal("SpaceShip_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "SpaceShip_Texture", "SpaceShip_Normal_Texture", "Anisotropic_Sampler");
 	entityManager->CreateMaterial("Bullet_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Bullet_Texture", "Anisotropic_Sampler");
+	entityManager->CreateMaterial("InteriorMapping_Material", "InteriorMapping_Vertex_Shader", "InteriorMapping_Pixel_Shader", "InteriorMap_Texture", "Anisotropic_Sampler");
 
 	// Load geometry
 	entityManager->CreateMesh("Sphere_Mesh", device, "resources/models/sphere.obj");
 	entityManager->CreateMesh("SpaceShip_Mesh", device, "resources/models/SpaceShip.obj");
 	entityManager->CreateMesh("Bullet_Mesh", device, "resources/models/bullet.obj");
-	//entityManager->CreateMesh("Cube_Mesh", device, "resources/models/cube.obj"); -- can use for when buildings make it in
+	entityManager->CreateMesh("Cube_Mesh", device, "resources/models/cube.obj"); 
 
 	// Create entities using the previously set up resources
 	entityManager->CreateEntity("Player", "SpaceShip_Mesh", "SpaceShip_Material", EntityType::Player);
-	entityManager->CreateEntity("Asteroid1", "Sphere_Mesh", "Cliff_Normal_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid2", "Sphere_Mesh", "Cliff_Normal_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Cliff_Normal_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Cliff_Normal_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Cliff_Normal_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid1", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid2", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+
+	// Create buildings utilizing interior mapping and randomly place them on the outskitrs of the scene
+	for (int i = 0; i < 20; i++)
+	{
+		std::string name = "Building_" + std::to_string(i);
+		entityManager->CreateEntity(name, "Cube_Mesh", "InteriorMapping_Material", EntityType::Base);
+
+		float x = 0;
+		float z = 0;
+		float minDist = 100;
+		float scale = 100;
+		do
+		{
+			x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) * 2 - 1;
+			x *= scale;
+			z = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) * 2 - 1;
+			z *= scale;
+		} while ((x < minDist && x > -minDist) && (z < minDist && z > -minDist));
+		entityManager->GetEntity(name)->SetPosition(XMFLOAT3(x, 0, z));
+		entityManager->GetEntity(name)->SetUniformScale(rand() % 30 + 10);
+	}
 }
 
 // --------------------------------------------------------
@@ -513,7 +538,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 		case SceneState::Game:
 			// Draw each entity with lighting
-			entityManager->DrawEntities(context, camera, lights, _countof(lights));
+			entityManager->DrawEntities(context, camera, lights, _countof(lights), skySRV);
 			// Draw the sky after you finish drawing opaque objects
 			DrawSky();
 			break;
