@@ -775,14 +775,16 @@ void EntityManager::RemoveSamplerState(string samplerStateName)
 	samplerStates.erase(samplerStateName);
 }
 
-void EntityManager::CreateEmitter(std::string emitterName, ID3D11Device * device, std::string vs, std::string ps, std::string texture)
+void EntityManager::CreateEmitter(std::string emitterName, ID3D11Device * device, std::string vs, std::string ps, std::string texture, ID3D11DepthStencilState* particleDepthState, ID3D11BlendState* particleBlendState)
 {
 	emitters[emitterName] = SmartEmitter(
 		new Emitter(
 			device, 
 			vertexShaders[vs].vertexShader,
 			pixelShaders[ps].pixelShader,
-			shaderResourceViews[texture].shaderResourceView
+			shaderResourceViews[texture].shaderResourceView,
+			particleDepthState, 
+			particleBlendState
 		));
 }
 

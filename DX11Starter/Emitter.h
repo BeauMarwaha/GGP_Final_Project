@@ -29,7 +29,9 @@ public:
 		ID3D11Device* device,
 		SimpleVertexShader* vs,
 		SimplePixelShader* ps,
-		ID3D11ShaderResourceView* texture
+		ID3D11ShaderResourceView* texture,
+		ID3D11DepthStencilState* particleDepthState,
+		ID3D11BlendState* particleBlendState
 	);
 	~Emitter();
 
@@ -86,5 +88,9 @@ private:
 	ID3D11ShaderResourceView* texture;
 	SimpleVertexShader* vs;
 	SimplePixelShader* ps;
+
+	// Blend and depth states
+	ID3D11DepthStencilState* particleDepthState;
+	ID3D11BlendState* particleBlendState;
 };
 

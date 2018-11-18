@@ -60,6 +60,10 @@ private:
 	ID3D11RasterizerState* skyRastState;
 	ID3D11DepthStencilState* skyDepthState;
 
+	// look at me, I am the E_M_I_T now
+	ID3D11DepthStencilState* particleDepthState;
+	ID3D11BlendState* particleBlendState;
+
 	// Initialization helper methods
 	void CreateLights();
 	void CreateEntities();

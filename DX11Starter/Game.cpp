@@ -65,6 +65,10 @@ Game::~Game()
 	delete skyPS;
 	delete skyMesh;
 
+	// Cease E_M_I_T
+	particleBlendState->Release();
+	particleDepthState->Release();
+
 	// Delete the menu manager
 	delete menuManager;
 
@@ -176,6 +180,27 @@ void Game::CreateEntities()
 	samplerDesc.MaxAnisotropy = 16; // Use x16 anisotropy
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX; // This value needs to be higher than 0 for mipmapping to work
 
+	// A depth state for the particles
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Turns off depth writing
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	device->CreateDepthStencilState(&dsDesc, &particleDepthState);
+
+	// Blend for particles (additive)
+	D3D11_BLEND_DESC blend = {};
+	blend.AlphaToCoverageEnable = false;
+	blend.IndependentBlendEnable = false;
+	blend.RenderTarget[0].BlendEnable = true;
+	blend.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&blend, &particleBlendState);
+
 	// Create the anisotropic filtering sampler state
 	entityManager->CreateSamplerState("Anisotropic_Sampler", device, samplerDesc);
 
@@ -192,7 +217,7 @@ void Game::CreateEntities()
 	entityManager->CreateMesh("Cube_Mesh", device, "resources/models/cube.obj"); 
 
 	// Create emitters and pass them to entities
-	entityManager->CreateEmitter("Exhaust_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle");
+	entityManager->CreateEmitter("Exhaust_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
 
 	// Create entities using the previously set up resources
 	entityManager->CreateEntityWithEmitter("Player", "SpaceShip_Mesh", "SpaceShip_Material", "Exhaust_Emitter", EntityType::Player);
@@ -509,6 +534,9 @@ void Game::DrawSky()
 
 	// Finally do the actual drawing
 	context->DrawIndexed(skyMesh->GetIndexCount(), 0, 0);
+
+	context->RSSetState(0);
+	context->OMSetDepthStencilState(0, 0);
 }
 
 // --------------------------------------------------------

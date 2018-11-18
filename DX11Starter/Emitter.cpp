@@ -6,15 +6,19 @@ Emitter::Emitter(
 	ID3D11Device* device,
 	SimpleVertexShader* vs,
 	SimplePixelShader* ps,
-	ID3D11ShaderResourceView* texture
+	ID3D11ShaderResourceView* texture,
+	ID3D11DepthStencilState* particleDepthState, 
+	ID3D11BlendState* particleBlendState
 )
 {
 	// Save params
 	this->vs = vs;
 	this->ps = ps;
 	this->texture = texture;
+	this->particleDepthState = particleDepthState;
+	this->particleBlendState = particleBlendState;
 
-	this->maxParticles = 100;
+	this->maxParticles = 1000;
 
 	timeSinceEmit = 0;
 	livingParticleCount = 0;
@@ -241,6 +245,10 @@ void Emitter::CopyOneParticle(int index)
 
 void Emitter::Draw(ID3D11DeviceContext* context, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix)
 {
+	float blend[4] = { 1,1,1,1 };
+	context->OMSetBlendState(particleBlendState, blend, 0xffffffff);  // Additive blending
+	context->OMSetDepthStencilState(particleDepthState, 0);			// No depth WRITING
+
 	// Copy to dynamic buffer
 	CopyParticlesToGPU(context);
 
@@ -272,6 +280,10 @@ void Emitter::Draw(ID3D11DeviceContext* context, XMFLOAT4X4 viewMatrix, XMFLOAT4
 		// Draw second half (alive -> max)
 		context->DrawIndexed((maxParticles - firstAliveIndex) * 6, firstAliveIndex * 6, 0);
 	}
+
+	// Reset to default states for next frame
+	context->OMSetBlendState(0, blend, 0xffffffff);
+	context->OMSetDepthStencilState(0, 0);
 
 }
 

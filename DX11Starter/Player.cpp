@@ -28,10 +28,10 @@ Player::Player(Mesh* m, Material* mat, int type, Emitter * E_M_I_T) :
 
 	// Set emitter values
 	//exhaustEmitter->SetMaxParticles(100);
-	exhaustEmitter->SetParticlesPerSecod(10);
-	exhaustEmitter->SetLifetime(2);
+	exhaustEmitter->SetParticlesPerSecod(100);
+	exhaustEmitter->SetLifetime(5);
 	exhaustEmitter->SetStartSize(0.1f);
-	exhaustEmitter->SetEndSize(0.5f);
+	exhaustEmitter->SetEndSize(5.0f);
 	exhaustEmitter->SetStartColor(XMFLOAT4(1, 0.1f, 0.1f, 0.2f));
 	exhaustEmitter->SetEndColor(XMFLOAT4(1, 0.6f, 0.1f, 0.0f));
 	exhaustEmitter->SetEmitterVelocity(XMFLOAT3(0, 0, -1));
@@ -107,17 +107,7 @@ void Player::Draw(ID3D11DeviceContext * context, XMFLOAT4X4 viewMatrix, XMFLOAT4
 	Entity::Draw(context, viewMatrix, projectionMatrix);
 
 	// Drawing particle systems
-	// Particle states
-	float blend[4] = { 1,1,1,1 };
-	//context->OMSetBlendState(particleBlendState, blend, 0xffffffff);  // Additive blending
-	//context->OMSetDepthStencilState(particleDepthState, 0);			// No depth WRITING
-
-																	// Draw the emitter
-	exhaustEmitter->Draw(context, viewMatrix, projectionMatrix);
-
-	// Reset to default states for next frame
-	context->OMSetBlendState(0, blend, 0xffffffff);
-	context->OMSetDepthStencilState(0, 0);
+	exhaustEmitter->Draw(context, viewMatrix, projectionMatrix); // Draw the emitter
 }
 
 void Player::Shoot(float totalTime)
