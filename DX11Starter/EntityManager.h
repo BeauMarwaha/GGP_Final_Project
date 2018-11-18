@@ -79,6 +79,16 @@ struct SmartMaterial
 	std::string samplerStateName; // Name of the sampler state this material utilizes
 };
 
+// Struct representing a smart emitter
+struct SmartEmitter 
+{
+	SmartEmitter() {}
+	SmartEmitter(Emitter * emitter) : emitter(emitter), refCount(refCount) { }
+
+	// Members
+	Emitter * emitter;
+	unsigned int refCount;
+};
 // Struct representing a smart simple vertex shader
 struct SmartVertexShader
 {
@@ -146,6 +156,7 @@ public:
 	#pragma region Public Helper Methods
 	// Entity Helper Methods
 	void CreateEntity(std::string entityName, std::string meshName, std::string materialName, EntityType type);
+	void CreateEntityWithEmitter(std::string entityName, std::string meshName, std::string materialName, std::string emitterName, EntityType type);
 	void RemoveEntity(std::string entityName);
 	Entity* GetEntity(std::string entityName);
 
@@ -174,6 +185,10 @@ public:
 	// Sampler State Helper Methods
 	void CreateSamplerState(std::string samplerStateName, ID3D11Device* device, D3D11_SAMPLER_DESC samplerDesc);
 	void RemoveSamplerState(std::string samplerStateName);
+
+	// Emitter Helper Methods
+	void CreateEmitter(std::string emitterName, ID3D11Device* device, std::string vs, std::string ps, std::string texture);
+	void RemoveEmitter(std::string emitterName);
 	#pragma endregion
 
 private:
@@ -182,6 +197,7 @@ private:
 
 	// Maps to keep track of entity related objects
 	std::map<std::string, SmartMesh> meshes; // Smart Meshes Map (Uses mesh name for the key)
+	std::map<std::string, SmartEmitter> emitters; // Smart Meshes Map (Uses mesh name for the key)
 	std::map<std::string, SmartMaterial> materials; // Smart Materials Map (Uses material name for the key)
 	std::map<std::string, SmartVertexShader> vertexShaders; // Smart Vertex Shaders Map (Uses vertex shader name for the key)
 	std::map<std::string, SmartPixelShader> pixelShaders; // Smart Pixel Shaders Map (Uses pixel shader name for the key)

@@ -1,6 +1,7 @@
 #pragma once
 #include "Entity.h"
 #include "EntityManager.h"
+#include "Emitter.h"
 
 // --------------------------------------------------------
 // A Player class that represents the player ship object
@@ -10,7 +11,7 @@ class Player :
 	public Entity
 {
 public:
-	Player(Mesh* m, Material* mat, int type);
+	Player(Mesh* m, Material* mat, int type, Emitter * E_M_I_T);
 	~Player();
 
 	// Update the player
@@ -18,6 +19,9 @@ public:
 
 	// Set property for entity manager
 	void SetEntityManager(EntityManager* entityManager);
+
+	// Overrride base draw for particles
+	void Draw(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix) override;
 
 private:
 	// Shoot a bullet
@@ -33,4 +37,7 @@ private:
 	bool canShoot;
 	float coolDown;
 	float lastShot;
+
+	// exhaust emitter
+	Emitter * exhaustEmitter;
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include "Entity.h"
+#include "Emitter.h"
 
 // --------------------------------------------------------
 // An Asteroid class that represents a singular asteroid object
@@ -14,5 +15,7 @@ public:
 
 	// Update the asteroid
 	void Update(float deltaTime, float totalTime);
+private:
+	Emitter * emitter;
 };
 

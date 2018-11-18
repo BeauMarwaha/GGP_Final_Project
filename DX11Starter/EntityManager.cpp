@@ -87,6 +87,15 @@ EntityManager::~EntityManager()
 		RemoveSamplerState(names[i]);
 	// Clear the list of names
 	names.clear();
+
+	// Get all existing emitter names
+	for (auto& emitter : emitters)
+		names.push_back(emitter.first);
+	// Remove all existing sampler states
+	for (std::vector<Entity>::size_type i = 0; i != names.size(); i++)
+		RemoveEmitter(names[i]);
+	// Clear the list of names
+	names.clear();
 }
 
 bool EntityManager::UpdateEntities(float deltaTime, float totalTime)
@@ -229,21 +238,68 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 			entities[entityName].entity->SetDirection(GetEntity("Player")->GetDirection());
 		}
 		break;
+	//case EntityType::Player:
+	//	{
+	//		// Create a new player using the given mesh and material and assign it to the entity map
+	//		entities[entityName] = SmartEntity(
+	//			new Player(
+	//				GetMesh(meshName),
+	//				GetMaterial(materialName),
+	//				(int)EntityType::Player
+	//			),
+	//			meshName,
+	//			materialName);
+	//		Player* play = (Player*)GetEntity("Player");
+	//		play->SetEntityManager(this);
+	//	}
+	//	break;
+	}
+}
+
+void EntityManager::CreateEntityWithEmitter(std::string entityName, std::string meshName, std::string materialName, std::string emitterName, EntityType type)
+{
+	// Ensure the specfied mesh exists
+	if (meshes.count(meshName) == 0)
+	{
+		throw "The specified mesh: " + meshName + " does not exist.";
+	}
+
+	// Ensure the specfied material exists
+	if (materials.count(materialName) == 0)
+	{
+		throw "The specified material: " + materialName + " does not exist.";
+	}
+
+	switch (type) {
+	case EntityType::Asteroid:
+	{
+		// Create a new asteroid using the given mesh and material and assign it to the entity map
+		entities[entityName] = SmartEntity(
+			new Asteroid(
+				GetMesh(meshName),
+				GetMaterial(materialName),
+				(int)EntityType::Asteroid
+			),
+			meshName,
+			materialName);
+	}
+	break;
 	case EntityType::Player:
-		{
-			// Create a new player using the given mesh and material and assign it to the entity map
-			entities[entityName] = SmartEntity(
-				new Player(
-					GetMesh(meshName),
-					GetMaterial(materialName),
-					(int)EntityType::Player
-				),
-				meshName,
-				materialName);
-			Player* play = (Player*)GetEntity("Player");
-			play->SetEntityManager(this);
-		}
-		break;
+	{
+		// Create a new player using the given mesh and material and assign it to the entity map
+		entities[entityName] = SmartEntity(
+			new Player(
+				GetMesh(meshName),
+				GetMaterial(materialName),
+				(int)EntityType::Player,
+				emitters[emitterName].emitter
+			),
+			meshName,
+			materialName);
+		Player* play = (Player*)GetEntity("Player");
+		play->SetEntityManager(this);
+	}
+	break;
 	}
 }
 
@@ -717,6 +773,32 @@ void EntityManager::RemoveSamplerState(string samplerStateName)
 
 	// Remove the sampler state pair from the map
 	samplerStates.erase(samplerStateName);
+}
+
+void EntityManager::CreateEmitter(std::string emitterName, ID3D11Device * device, std::string vs, std::string ps, std::string texture)
+{
+	emitters[emitterName] = SmartEmitter(
+		new Emitter(
+			device, 
+			vertexShaders[vs].vertexShader,
+			pixelShaders[ps].pixelShader,
+			shaderResourceViews[texture].shaderResourceView
+		));
+}
+
+void EntityManager::RemoveEmitter(std::string emitterName)
+{
+	// Ensure the specfied material exists
+	if (emitters.count(emitterName) == 0)
+	{
+		throw "The specified emitter: " + emitterName + " does not exist.";
+	}
+
+	// Delete the entity instance from the heap
+	delete emitters[emitterName].emitter;
+
+	// Remove the entity pair from the map
+	emitters.erase(emitterName);
 }
 
 ID3D11SamplerState* EntityManager::GetSamplerState(string samplerStateName)

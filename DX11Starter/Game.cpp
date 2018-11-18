@@ -147,11 +147,13 @@ void Game::CreateEntities()
 	entityManager->CreateVertexShader("Default_Vertex_Shader", device, context, L"VertexShader.cso");
 	entityManager->CreateVertexShader("Normals_Vertex_Shader", device, context, L"VertexShaderNormals.cso");
 	entityManager->CreateVertexShader("InteriorMapping_Vertex_Shader", device, context, L"VertexShaderInteriorMapping.cso");
+	entityManager->CreateVertexShader("Particle_Vertex_Shader", device, context, L"VertexShaderParticle.cso");
 
 	// Create the pixel shaders
 	entityManager->CreatePixelShader("Default_Pixel_Shader", device, context, L"PixelShader.cso");
 	entityManager->CreatePixelShader("Normals_Pixel_Shader", device, context, L"PixelShaderNormals.cso");
 	entityManager->CreatePixelShader("InteriorMapping_Pixel_Shader", device, context, L"PixelShaderInteriorMapping.cso");
+	entityManager->CreatePixelShader("Particle_Pixel_Shader", device, context, L"PixelShaderParticle.cso");
 
 	// Create the rock shader resource view
 	entityManager->CreateShaderResourceView("Cliff_Texture", device, context, L"resources/textures/CliffLayered_bc.tif");
@@ -160,6 +162,10 @@ void Game::CreateEntities()
 	entityManager->CreateShaderResourceView("SpaceShip_Normal_Texture", device, context, L"resources/textures/SpaceShip/SpaceShip_normal.png");
 	entityManager->CreateShaderResourceView("Bullet_Texture", device, context, L"resources/textures/Bullet_bc.png");
 	entityManager->CreateInteriorMappingDDSShaderResourceView("InteriorMap_Texture", device, context, L"resources/textures/InteriorMaps/OfficeCubeMap.dds");
+
+	// Create particle textures
+	//entityManager->CreateShaderResourceView("fireParticle", device, context, L"resources/textures/SpaceShip/fireParticle.jpg");
+	entityManager->CreateShaderResourceView("Particle", device, context, L"resources/textures/particles/particle.jpg");
 
 	// Define the anisotropic filtering sampler description
 	D3D11_SAMPLER_DESC samplerDesc = {}; // Zero out all values initially
@@ -185,8 +191,11 @@ void Game::CreateEntities()
 	entityManager->CreateMesh("Bullet_Mesh", device, "resources/models/bullet.obj");
 	entityManager->CreateMesh("Cube_Mesh", device, "resources/models/cube.obj"); 
 
+	// Create emitters and pass them to entities
+	entityManager->CreateEmitter("Exhaust_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle");
+
 	// Create entities using the previously set up resources
-	entityManager->CreateEntity("Player", "SpaceShip_Mesh", "SpaceShip_Material", EntityType::Player);
+	entityManager->CreateEntityWithEmitter("Player", "SpaceShip_Mesh", "SpaceShip_Material", "Exhaust_Emitter", EntityType::Player);
 	entityManager->CreateEntity("Asteroid1", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
 	entityManager->CreateEntity("Asteroid2", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
 	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);

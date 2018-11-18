@@ -4,7 +4,7 @@
 // For the DirectX Math library
 using namespace DirectX;
 
-Player::Player(Mesh* m, Material* mat, int type) :
+Player::Player(Mesh* m, Material* mat, int type, Emitter * E_M_I_T) :
 	Entity(m, mat, type)
 {
 	maxSpeed = 5;
@@ -22,6 +22,21 @@ Player::Player(Mesh* m, Material* mat, int type) :
 	canShoot = true;
 	coolDown = 0.5f;
 	lastShot = 0.0f;
+
+	// Set emitter
+	exhaustEmitter = E_M_I_T;
+
+	// Set emitter values
+	//exhaustEmitter->SetMaxParticles(100);
+	exhaustEmitter->SetParticlesPerSecod(10);
+	exhaustEmitter->SetLifetime(2);
+	exhaustEmitter->SetStartSize(0.1f);
+	exhaustEmitter->SetEndSize(0.5f);
+	exhaustEmitter->SetStartColor(XMFLOAT4(1, 0.1f, 0.1f, 0.2f));
+	exhaustEmitter->SetEndColor(XMFLOAT4(1, 0.6f, 0.1f, 0.0f));
+	exhaustEmitter->SetEmitterVelocity(XMFLOAT3(0, 0, -1));
+	exhaustEmitter->SetEmitterPosition(position);
+	exhaustEmitter->SetEmitterAcceleration(XMFLOAT3(0, 0, 0));
 }
 
 
@@ -84,6 +99,24 @@ void Player::Update(float deltaTime, float totalTime)
 void Player::SetEntityManager(EntityManager * entityManager)
 {
 	this->entityManager = entityManager;
+}
+
+void Player::Draw(ID3D11DeviceContext * context, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix)
+{
+	Entity::Draw(context, viewMatrix, projectionMatrix);
+
+	// Drawing particle systems
+	// Particle states
+	float blend[4] = { 1,1,1,1 };
+	//context->OMSetBlendState(particleBlendState, blend, 0xffffffff);  // Additive blending
+	//context->OMSetDepthStencilState(particleDepthState, 0);			// No depth WRITING
+
+																	// Draw the emitter
+	exhaustEmitter->Draw(context, viewMatrix, projectionMatrix);
+
+	// Reset to default states for next frame
+	context->OMSetBlendState(0, blend, 0xffffffff);
+	context->OMSetDepthStencilState(0, 0);
 }
 
 void Player::Shoot(float totalTime)
