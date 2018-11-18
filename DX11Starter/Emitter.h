@@ -46,8 +46,8 @@ public:
 	void SetMaxParticles(int _maxParticles);
 	void SetParticlesPerSecod(int _particlesPerSecond);
 	void SetLifetime(float _lifetime);
-	void SetStartSize(int _startSize);
-	void SetEndSize(int _endSize);
+	void SetStartSize(float _startSize);
+	void SetEndSize(float _endSize);
 	void SetStartColor(DirectX::XMFLOAT4 _startColor);
 	void SetEndColor(DirectX::XMFLOAT4 _endColor);
 	void SetEmitterVelocity(DirectX::XMFLOAT3 _startVelocity);

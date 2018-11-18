@@ -291,12 +291,12 @@ void Emitter::SetLifetime(float _lifetime)
 	lifetime = _lifetime;
 }
 
-void Emitter::SetStartSize(int _startSize)
+void Emitter::SetStartSize(float _startSize)
 {
 	startSize = _startSize;
 }
 
-void Emitter::SetEndSize(int _endSize)
+void Emitter::SetEndSize(float _endSize)
 {
 	endSize = _endSize;
 }
