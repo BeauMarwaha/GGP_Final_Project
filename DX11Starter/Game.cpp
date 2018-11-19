@@ -222,10 +222,10 @@ void Game::CreateEntities()
 	// Create entities using the previously set up resources
 	entityManager->CreateEntityWithEmitter("Player", "SpaceShip_Mesh", "SpaceShip_Material", "Exhaust_Emitter", EntityType::Player);
 	entityManager->CreateEntity("Asteroid1", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid2", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+	//entityManager->CreateEntity("Asteroid2", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+	//entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+	//entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+	//entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
 
 	// Create buildings utilizing interior mapping and randomly place them on the outskitrs of the scene
 	for (int i = 0; i < 20; i++)

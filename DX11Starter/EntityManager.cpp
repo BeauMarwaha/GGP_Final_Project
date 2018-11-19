@@ -118,9 +118,10 @@ bool EntityManager::UpdateEntities(float deltaTime, float totalTime)
 						// Bullet vs. Asteroid Collision -- Destroy both of them
 						RemoveEntity(entity.first);
 						RemoveEntity(other.first);
+						asteroidCount--;
 
-						/*if (meshes[entities[entity.first].meshName].refCount <= 0) return true;
-						else*/ return false;
+						if (asteroidCount <= 0) return true;
+						else return false;
 					}
 				}
 				if (entity.second.entity->GetType() == (int)EntityType::Player)
@@ -197,6 +198,9 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 				),
 				meshName,
 				materialName);
+
+			// Increment asteroid count to track them
+			asteroidCount++;
 		}
 		break;
 	case EntityType::Base:

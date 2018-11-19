@@ -226,6 +226,9 @@ private:
 	// Collision detection helper method
 	// returns true if collision is found
 	bool CheckForCollision(Entity * entity1, Entity * entity2);
+
+	// Counter for asteroids
+	int asteroidCount = 0;
 	#pragma endregion
 };
 #endif
