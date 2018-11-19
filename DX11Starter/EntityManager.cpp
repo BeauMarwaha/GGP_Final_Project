@@ -87,6 +87,15 @@ EntityManager::~EntityManager()
 		RemoveSamplerState(names[i]);
 	// Clear the list of names
 	names.clear();
+
+	// Get all existing emitter names
+	for (auto& emitter : emitters)
+		names.push_back(emitter.first);
+	// Remove all existing sampler states
+	for (std::vector<Entity>::size_type i = 0; i != names.size(); i++)
+		RemoveEmitter(names[i]);
+	// Clear the list of names
+	names.clear();
 }
 
 bool EntityManager::UpdateEntities(float deltaTime, float totalTime)
@@ -109,9 +118,10 @@ bool EntityManager::UpdateEntities(float deltaTime, float totalTime)
 						// Bullet vs. Asteroid Collision -- Destroy both of them
 						RemoveEntity(entity.first);
 						RemoveEntity(other.first);
+						asteroidCount--;
 
-						/*if (meshes[entities[entity.first].meshName].refCount <= 0) return true;
-						else*/ return false;
+						if (asteroidCount <= 0) return true;
+						else return false;
 					}
 				}
 				if (entity.second.entity->GetType() == (int)EntityType::Player)
@@ -129,7 +139,7 @@ bool EntityManager::UpdateEntities(float deltaTime, float totalTime)
 	return false;
 }
 
-void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[], int lightCount)
+void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[], int lightCount, ID3D11ShaderResourceView* skySRV)
 {
 	// Draws all entities with lighting
 	for (auto& entity : entities)
@@ -140,6 +150,22 @@ void EntityManager::DrawEntities(ID3D11DeviceContext* context, Camera* camera, D
 			"lights", // The name of the variable in the shader
 			lights, // The address of the data to copy
 			sizeof(DirectionalLight) * lightCount); // The size of the data to copy
+
+		// If this is the interior mapping material pass in unique pixel shader data
+		if (entity.second.materialName == "InteriorMapping_Material")
+		{
+			pixelShader->SetShaderResourceView("SkyCube", skySRV);
+			pixelShader->SetFloat3("CameraPosition", camera->GetPosition());
+			pixelShader->SetInt("NumCubeMaps", 8);
+
+			// Base the number of offices off the current scale
+			pixelShader->SetFloat("Offices", (int)entity.second.entity->GetScale().x / 3);
+
+			// Base the room random generator seed off the building number
+			size_t last_index = entity.first.find_last_not_of("0123456789");
+			string result = entity.first.substr(last_index + 1);
+			pixelShader->SetInt("RandSeed", stoi(result));
+		}
 
 		// Draw the entity
 		entity.second.entity->Draw(context, camera->GetViewMatrix(), camera->GetProjectionMatrix());
@@ -172,6 +198,9 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 				),
 				meshName,
 				materialName);
+
+			// Increment asteroid count to track them
+			asteroidCount++;
 		}
 		break;
 	case EntityType::Base:
@@ -198,26 +227,83 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 				),
 				meshName,
 				materialName);
-			// Set the bullet's position and direction to be the same as the Player's
-			entities[entityName].entity->SetPosition(GetEntity("Player")->GetPosition());
+
+			// Set the bullet's position to be slightly in front of the Player and direction to be the same as the Player's
+			XMMATRIX rotation = XMMatrixRotationRollPitchYaw(GetEntity("Player")->GetRotation().x, GetEntity("Player")->GetRotation().y, 0);
+			XMFLOAT4 forward = XMFLOAT4(0, 0, 1, 0);
+			XMVECTOR newForward = XMVector4Transform(XMLoadFloat4(&forward), rotation);
+			XMFLOAT4 playerForward = XMFLOAT4(0, 0, 1, 0);
+			XMStoreFloat4(&playerForward, newForward);
+
+			XMFLOAT3 initialPosition = GetEntity("Player")->GetPosition();
+			initialPosition.x += playerForward.x * 3;
+			initialPosition.z += playerForward.z * 3;
+			entities[entityName].entity->SetPosition(initialPosition);
 			entities[entityName].entity->SetDirection(GetEntity("Player")->GetDirection());
 		}
 		break;
+	//case EntityType::Player:
+	//	{
+	//		// Create a new player using the given mesh and material and assign it to the entity map
+	//		entities[entityName] = SmartEntity(
+	//			new Player(
+	//				GetMesh(meshName),
+	//				GetMaterial(materialName),
+	//				(int)EntityType::Player
+	//			),
+	//			meshName,
+	//			materialName);
+	//		Player* play = (Player*)GetEntity("Player");
+	//		play->SetEntityManager(this);
+	//	}
+	//	break;
+	}
+}
+
+void EntityManager::CreateEntityWithEmitter(std::string entityName, std::string meshName, std::string materialName, std::string emitterName, EntityType type)
+{
+	// Ensure the specfied mesh exists
+	if (meshes.count(meshName) == 0)
+	{
+		throw "The specified mesh: " + meshName + " does not exist.";
+	}
+
+	// Ensure the specfied material exists
+	if (materials.count(materialName) == 0)
+	{
+		throw "The specified material: " + materialName + " does not exist.";
+	}
+
+	switch (type) {
+	case EntityType::Asteroid:
+	{
+		// Create a new asteroid using the given mesh and material and assign it to the entity map
+		entities[entityName] = SmartEntity(
+			new Asteroid(
+				GetMesh(meshName),
+				GetMaterial(materialName),
+				(int)EntityType::Asteroid
+			),
+			meshName,
+			materialName);
+	}
+	break;
 	case EntityType::Player:
-		{
-			// Create a new player using the given mesh and material and assign it to the entity map
-			entities[entityName] = SmartEntity(
-				new Player(
-					GetMesh(meshName),
-					GetMaterial(materialName),
-					(int)EntityType::Player
-				),
-				meshName,
-				materialName);
-			Player* play = (Player*)GetEntity("Player");
-			play->SetEntityManager(this);
-		}
-		break;
+	{
+		// Create a new player using the given mesh and material and assign it to the entity map
+		entities[entityName] = SmartEntity(
+			new Player(
+				GetMesh(meshName),
+				GetMaterial(materialName),
+				(int)EntityType::Player,
+				emitters[emitterName].emitter
+			),
+			meshName,
+			materialName);
+		Player* play = (Player*)GetEntity("Player");
+		play->SetEntityManager(this);
+	}
+	break;
 	}
 }
 
@@ -524,6 +610,101 @@ void EntityManager::CreateShaderResourceView(string shaderResourceViewName, ID3D
 	shaderResourceViews[shaderResourceViewName] = SmartShaderResourceView(shaderResourceView, 0);
 }
 
+void EntityManager::CreateInteriorMappingDDSShaderResourceView(std::string shaderResourceViewName, ID3D11Device * device, ID3D11DeviceContext * context, LPCWSTR textureFile)
+{
+	// Load all of the interior cube maps
+	int numCubeMaps = 8;
+	ID3D11Resource** interiors = new ID3D11Resource*[numCubeMaps];
+	ID3D11ShaderResourceView** infos = new ID3D11ShaderResourceView*[numCubeMaps];
+	
+	CreateDDSTextureFromFile(device, context, textureFile, &interiors[0], &infos[0]);
+	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapDark.dds", &interiors[1], &infos[1]);
+	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapBrick.dds", &interiors[2], &infos[2]);
+	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapBrickDark.dds", &interiors[3], &infos[3]);
+	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapBrown.dds", &interiors[4], &infos[4]);
+	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapBrownDark.dds", &interiors[5], &infos[5]);
+	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapWhiteboard.dds", &interiors[6], &infos[6]);
+	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapWhiteboardDark.dds", &interiors[7], &infos[7]);
+
+	// Grab the desc of the info SRV
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	infos[0]->GetDesc(&srvDesc);
+	int mipLevels = srvDesc.Texture2DArray.MipLevels;
+
+	// Create a cube map array
+	D3D11_TEXTURE2D_DESC cubeDesc = {};
+	cubeDesc.ArraySize = 6 * numCubeMaps; // 6 faces per cube * total cubes
+	cubeDesc.Height = 256;
+	cubeDesc.Width = 256;
+	cubeDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	cubeDesc.CPUAccessFlags = 0;
+	cubeDesc.Format = srvDesc.Format; // Use the same format
+	cubeDesc.MipLevels = mipLevels;
+	cubeDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+	cubeDesc.SampleDesc.Count = 1;
+	cubeDesc.SampleDesc.Quality = 0;
+	cubeDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	ID3D11Texture2D* cubeArrayTexture;
+	device->CreateTexture2D(&cubeDesc, 0, &cubeArrayTexture);
+
+	D3D11_BOX box = {};
+	box.top = 0;
+	box.left = 0;
+	box.bottom = 256;
+	box.right = 256;
+	box.front = 0;
+	box.back = 1;
+
+	// Copy all textures into this one
+	for (int cube = 0; cube < numCubeMaps; cube++)
+	{
+		for (int face = 0; face < 6; face++)
+		{
+			for (int mip = 0; mip < mipLevels; mip++)
+			{
+				// Update the box for this mip
+				box.right = max(1, (unsigned int)pow(2, mipLevels - mip - 1));
+				box.bottom = box.right;
+
+				// Copy
+				context->CopySubresourceRegion(
+					cubeArrayTexture,
+					D3D11CalcSubresource(mip, cube * 6 + face, mipLevels),
+					0, 0, 0,
+					interiors[cube],
+					D3D11CalcSubresource(mip, face, mipLevels),
+					&box);
+			}
+		}
+	}
+
+	// Create the shader resource view that will be used to
+	// access the cube map array in the shader
+	D3D11_SHADER_RESOURCE_VIEW_DESC finalSRVDesc = {};
+	finalSRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBEARRAY;
+	finalSRVDesc.TextureCubeArray.First2DArrayFace = 0;
+	finalSRVDesc.TextureCubeArray.MipLevels = mipLevels;
+	finalSRVDesc.TextureCubeArray.MostDetailedMip = 0;
+	finalSRVDesc.TextureCubeArray.NumCubes = numCubeMaps;
+	finalSRVDesc.Format = cubeDesc.Format;
+
+	ID3D11ShaderResourceView* interiorCubeSRV;
+	device->CreateShaderResourceView(cubeArrayTexture, &finalSRVDesc, &interiorCubeSRV);
+	
+	// Create a new shader resource view using the passed in data and assign it to the shader resource view map
+	shaderResourceViews[shaderResourceViewName] = SmartShaderResourceView(interiorCubeSRV, 0);
+
+	// Done!  Clean up everything we don't need
+	cubeArrayTexture->Release();
+	for (int i = 0; i < numCubeMaps; i++) {
+		infos[i]->Release();
+		interiors[i]->Release();
+	}
+	delete[] infos;
+	delete[] interiors;
+}
+
 void EntityManager::RemoveShaderResourceView(string shaderResourceViewName)
 {
 	// Check to see if the shader resource view we are trying to remove is actually a non-existant normal map
@@ -596,6 +777,34 @@ void EntityManager::RemoveSamplerState(string samplerStateName)
 
 	// Remove the sampler state pair from the map
 	samplerStates.erase(samplerStateName);
+}
+
+void EntityManager::CreateEmitter(std::string emitterName, ID3D11Device * device, std::string vs, std::string ps, std::string texture, ID3D11DepthStencilState* particleDepthState, ID3D11BlendState* particleBlendState)
+{
+	emitters[emitterName] = SmartEmitter(
+		new Emitter(
+			device, 
+			vertexShaders[vs].vertexShader,
+			pixelShaders[ps].pixelShader,
+			shaderResourceViews[texture].shaderResourceView,
+			particleDepthState, 
+			particleBlendState
+		));
+}
+
+void EntityManager::RemoveEmitter(std::string emitterName)
+{
+	// Ensure the specfied material exists
+	if (emitters.count(emitterName) == 0)
+	{
+		throw "The specified emitter: " + emitterName + " does not exist.";
+	}
+
+	// Delete the entity instance from the heap
+	delete emitters[emitterName].emitter;
+
+	// Remove the entity pair from the map
+	emitters.erase(emitterName);
 }
 
 ID3D11SamplerState* EntityManager::GetSamplerState(string samplerStateName)

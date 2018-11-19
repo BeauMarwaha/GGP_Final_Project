@@ -2,6 +2,8 @@
 #include "Vertex.h"
 #include <ctime> 
 
+#include "DDSTextureLoader.h"
+
 // For the DirectX Math library
 using namespace DirectX;
 
@@ -54,6 +56,19 @@ Game::~Game()
 	// Delete the entity manager
 	delete entityManager;
 
+	// Delete the sky stuff
+	sampler->Release();
+	skySRV->Release();
+	skyDepthState->Release();
+	skyRastState->Release();
+	delete skyVS;
+	delete skyPS;
+	delete skyMesh;
+
+	// Cease E_M_I_T
+	particleBlendState->Release();
+	particleDepthState->Release();
+
 	// Delete the menu manager
 	delete menuManager;
 
@@ -86,10 +101,12 @@ void Game::Init()
 	case GameState::Debug:
 		CreateDebugLights();
 		CreateDebugEntities();
+		CreateSky();
 		break;
 	case GameState::Game:
 		CreateLights();
 		CreateEntities();
+		CreateSky();
 		break;
 	}
 
@@ -106,13 +123,13 @@ void Game::CreateLights()
 {
 	// Set up the directional light sources
 	lights[0].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
-	lights[0].DiffuseColor = XMFLOAT4(0, 0, 1, 1);
+	lights[0].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
 	lights[0].Direction = XMFLOAT3(1, -1, 0);
 	lights[1].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
-	lights[1].DiffuseColor = XMFLOAT4(0, 1, 0, 1);
+	lights[1].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
 	lights[1].Direction = XMFLOAT3(-1, 1, 0);
 	lights[2].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
-	lights[2].DiffuseColor = XMFLOAT4(1, 0, 0, 1);
+	lights[2].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
 	lights[2].Direction = XMFLOAT3(-1, -1, 0);
 	lights[3].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
 	lights[3].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
@@ -134,15 +151,28 @@ void Game::CreateLights()
 void Game::CreateEntities()
 {
 	// Create the vertex shaders
+	entityManager->CreateVertexShader("Default_Vertex_Shader", device, context, L"VertexShader.cso");
 	entityManager->CreateVertexShader("Normals_Vertex_Shader", device, context, L"VertexShaderNormals.cso");
+	entityManager->CreateVertexShader("InteriorMapping_Vertex_Shader", device, context, L"VertexShaderInteriorMapping.cso");
+	entityManager->CreateVertexShader("Particle_Vertex_Shader", device, context, L"VertexShaderParticle.cso");
 
 	// Create the pixel shaders
+	entityManager->CreatePixelShader("Default_Pixel_Shader", device, context, L"PixelShader.cso");
 	entityManager->CreatePixelShader("Normals_Pixel_Shader", device, context, L"PixelShaderNormals.cso");
+	entityManager->CreatePixelShader("InteriorMapping_Pixel_Shader", device, context, L"PixelShaderInteriorMapping.cso");
+	entityManager->CreatePixelShader("Particle_Pixel_Shader", device, context, L"PixelShaderParticle.cso");
 
 	// Create the rock shader resource view
 	entityManager->CreateShaderResourceView("Cliff_Texture", device, context, L"resources/textures/CliffLayered_bc.tif");
 	entityManager->CreateShaderResourceView("Cliff_Normal_Texture", device, context, L"resources/textures/CliffLayered_normal.tif");
-	entityManager->CreateShaderResourceView("Snow_Texture", device, context, L"resources/textures/Snow_bc.jpg");
+	entityManager->CreateShaderResourceView("SpaceShip_Texture", device, context, L"resources/textures/SpaceShip/SpaceShip_bc.png");
+	entityManager->CreateShaderResourceView("SpaceShip_Normal_Texture", device, context, L"resources/textures/SpaceShip/SpaceShip_normal.png");
+	entityManager->CreateShaderResourceView("Bullet_Texture", device, context, L"resources/textures/Bullet_bc.png");
+	entityManager->CreateInteriorMappingDDSShaderResourceView("InteriorMap_Texture", device, context, L"resources/textures/InteriorMaps/OfficeCubeMap.dds");
+
+	// Create particle textures
+	//entityManager->CreateShaderResourceView("fireParticle", device, context, L"resources/textures/SpaceShip/fireParticle.jpg");
+	entityManager->CreateShaderResourceView("Particle", device, context, L"resources/textures/particles/particle.jpg");
 
 	// Define the anisotropic filtering sampler description
 	D3D11_SAMPLER_DESC samplerDesc = {}; // Zero out all values initially
@@ -153,25 +183,117 @@ void Game::CreateEntities()
 	samplerDesc.MaxAnisotropy = 16; // Use x16 anisotropy
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX; // This value needs to be higher than 0 for mipmapping to work
 
+	// A depth state for the particles
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Turns off depth writing
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	device->CreateDepthStencilState(&dsDesc, &particleDepthState);
+
+	// Blend for particles (additive)
+	D3D11_BLEND_DESC blend = {};
+	blend.AlphaToCoverageEnable = false;
+	blend.IndependentBlendEnable = false;
+	blend.RenderTarget[0].BlendEnable = true;
+	blend.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blend.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blend.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&blend, &particleBlendState);
+
 	// Create the anisotropic filtering sampler state
 	entityManager->CreateSamplerState("Anisotropic_Sampler", device, samplerDesc);
 
-	// Create the rock material using the previously set up resources
-	entityManager->CreateMaterialWithNormal("Cliff_Normal_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "Cliff_Texture", "Cliff_Normal_Texture", "Anisotropic_Sampler");
-	// Create the snow material using the previously set up resources
-	entityManager->CreateMaterial("Snow_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "Snow_Texture", "Anisotropic_Sampler");
+	// Create materials using the previously set up resources
+	entityManager->CreateMaterialWithNormal("Asteroid_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "Cliff_Texture", "Cliff_Normal_Texture", "Anisotropic_Sampler");
+	entityManager->CreateMaterialWithNormal("SpaceShip_Material", "Normals_Vertex_Shader", "Normals_Pixel_Shader", "SpaceShip_Texture", "SpaceShip_Normal_Texture", "Anisotropic_Sampler");
+	entityManager->CreateMaterial("Bullet_Material", "Default_Vertex_Shader", "Default_Pixel_Shader", "Bullet_Texture", "Anisotropic_Sampler");
+	entityManager->CreateMaterial("InteriorMapping_Material", "InteriorMapping_Vertex_Shader", "InteriorMapping_Pixel_Shader", "InteriorMap_Texture", "Anisotropic_Sampler");
 
 	// Load geometry
 	entityManager->CreateMesh("Sphere_Mesh", device, "resources/models/sphere.obj");
-	entityManager->CreateMesh("Cone_Mesh", device, "resources/models/cone.obj");
+	entityManager->CreateMesh("SpaceShip_Mesh", device, "resources/models/SpaceShip.obj");
+	entityManager->CreateMesh("Bullet_Mesh", device, "resources/models/bullet.obj");
+	entityManager->CreateMesh("Cube_Mesh", device, "resources/models/cube.obj"); 
+
+	// Create emitters and pass them to entities
+	entityManager->CreateEmitter("Exhaust_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
 
 	// Create entities using the previously set up resources
-	entityManager->CreateEntity("Player", "Cone_Mesh", "Cliff_Normal_Material", EntityType::Player);
-	entityManager->CreateEntity("Asteroid1", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid2", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
-	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Snow_Material", EntityType::Asteroid);
+	entityManager->CreateEntityWithEmitter("Player", "SpaceShip_Mesh", "SpaceShip_Material", "Exhaust_Emitter", EntityType::Player);
+	entityManager->CreateEntity("Asteroid1", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid2", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+
+	// Create buildings utilizing interior mapping and randomly place them on the outskitrs of the scene
+	for (int i = 0; i < 20; i++)
+	{
+		std::string name = "Building_" + std::to_string(i);
+		entityManager->CreateEntity(name, "Cube_Mesh", "InteriorMapping_Material", EntityType::Base);
+
+		float x = 0;
+		float z = 0;
+		float minDist = 100;
+		float scale = 100;
+		do
+		{
+			x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) * 2 - 1;
+			x *= scale;
+			z = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) * 2 - 1;
+			z *= scale;
+		} while ((x < minDist && x > -minDist) && (z < minDist && z > -minDist));
+		entityManager->GetEntity(name)->SetPosition(XMFLOAT3(x, 0, z));
+		entityManager->GetEntity(name)->SetUniformScale(rand() % 30 + 10);
+	}
+}
+
+// --------------------------------------------------------
+// Loads Vertex and Pixel shaders for the skybox
+// Creates the Cubemap Texture
+// Sets up a Rasterizer state and a Depth Stencil state for the skybox
+// --------------------------------------------------------
+void Game::CreateSky()
+{
+	skyVS = new SimpleVertexShader(device, context);
+	skyVS->LoadShaderFile(L"VertexShaderSky.cso");
+
+	skyPS = new SimplePixelShader(device, context);
+	skyPS->LoadShaderFile(L"PixelShaderSky.cso");
+
+	// Track a cube mesh separately from other meshes so its specific to the skybox and not entities
+	skyMesh = new Mesh(device, "resources/models/cube.obj");
+
+	// Define the anisotropic filtering sampler description
+	D3D11_SAMPLER_DESC samplerDesc = {}; // Zero out all values initially
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the U axis
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the V axis
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP; // Have UVW address wrap on the W axis
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC; // Use Anisotropic filtering
+	samplerDesc.MaxAnisotropy = 16; // Use x16 anisotropy
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX; // This value needs to be higher than 0 for mipmapping to work
+	// Ask DirectX for the actual object
+	device->CreateSamplerState(&samplerDesc, &sampler);
+
+	// Texture
+	CreateDDSTextureFromFile(device, context, L"resources/textures/skybox/SpaceCubeMap.dds", 0, &skySRV);
+
+	// Rasterizer state for drawing the inside of my sky box geometry
+	D3D11_RASTERIZER_DESC rs = {};
+	rs.FillMode = D3D11_FILL_SOLID;
+	rs.CullMode = D3D11_CULL_FRONT; // Reverse culling mode to be front-side so we see the interior of the skybox
+	rs.DepthClipEnable = true;
+	device->CreateRasterizerState(&rs, &skyRastState);
+
+	D3D11_DEPTH_STENCIL_DESC ds = {};
+	ds.DepthEnable = true;
+	ds.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	ds.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; // Make the depth to be the max value always
+	device->CreateDepthStencilState(&ds, &skyDepthState);
 }
 
 // --------------------------------------------------------
@@ -292,26 +414,27 @@ void Game::Update(float deltaTime, float totalTime)
 		if (&player != nullptr)
 		{
 			// Set movement rate
-			float speed = 5.0;
+			static float moveSpeed = 5.0;
+			static float turnSpeed = 1.0;
 
 			if (GetAsyncKeyState('W') & 0x8000)
 			{
-				player->MoveForward(XMFLOAT3(0, 0, speed * deltaTime), 0);
+				player->MoveForward(XMFLOAT3(0, 0, moveSpeed * deltaTime), 0);
 			}
 
 			if (GetAsyncKeyState('S') & 0x8000)
 			{
-				player->MoveForward(XMFLOAT3(0, 0, -speed * deltaTime), 0);
+				player->MoveForward(XMFLOAT3(0, 0, -moveSpeed * deltaTime), 0);
 			}
 
 			if (GetAsyncKeyState('A') & 0x8000)
 			{
-				player->RotateBy(XMFLOAT3(0, -speed * deltaTime, 0));
+				player->RotateBy(XMFLOAT3(0, -turnSpeed * deltaTime, 0));
 			}
 
 			if (GetAsyncKeyState('D') & 0x8000)
 			{
-				player->RotateBy(XMFLOAT3(0, speed * deltaTime, 0));
+				player->RotateBy(XMFLOAT3(0, turnSpeed * deltaTime, 0));
 			}
 		}
 
@@ -330,7 +453,11 @@ void Game::Update(float deltaTime, float totalTime)
 		camera->Update(deltaTime, totalTime, entityManager->GetEntity("Player"), debugCameraEnabled);
 
 		// Update all entities
-		if (entityManager->UpdateEntities(deltaTime, totalTime)) currentScene = SceneState::GameOver;
+		bool playerCollision = entityManager->UpdateEntities(deltaTime, totalTime);
+		if (playerCollision)
+		{
+			currentScene = SceneState::GameOver;
+		}
 	}
 }
 
@@ -370,6 +497,52 @@ void Game::DebugUpdate(float deltaTime, float totalTime)
 }
 
 // --------------------------------------------------------
+// Draws the skybox which includes
+//  -Setting up the sky render states
+//  -Getting the buffers for the mesh used
+//  -Setting the buffers and passing in the camera matrices
+//  -Sending in the texture info
+//  -Actually drawing the sky
+// --------------------------------------------------------
+void Game::DrawSky()
+{
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+
+	// Set up sky render states using the variables we initialized earlier
+	context->RSSetState(skyRastState);
+	context->OMSetDepthStencilState(skyDepthState, 0);
+
+	// After drawing all of our regular (solid) objects, draw the sky!
+	ID3D11Buffer* skyVB = skyMesh->GetVertexBuffer();
+	ID3D11Buffer* skyIB = skyMesh->GetIndexBuffer();
+
+	// Set the buffers
+	context->IASetVertexBuffers(0, 1, &skyVB, &stride, &offset);
+	context->IASetIndexBuffer(skyIB, DXGI_FORMAT_R32_UINT, 0);
+
+	// Send in the view and projection matrices, don't need the world for the skybox
+	skyVS->SetMatrix4x4("view", camera->GetViewMatrix());
+	skyVS->SetMatrix4x4("projection", camera->GetProjectionMatrix());
+
+	skyVS->CopyAllBufferData();
+	skyVS->SetShader();
+
+	// Send texture-related stuff
+	skyPS->SetShaderResourceView("SkyTextureBase", skySRV);
+	skyPS->SetSamplerState("basicSampler", sampler);
+
+	skyPS->CopyAllBufferData(); // Remember to copy to the GPU!!!!
+	skyPS->SetShader();
+
+	// Finally do the actual drawing
+	context->DrawIndexed(skyMesh->GetIndexCount(), 0, 0);
+
+	context->RSSetState(0);
+	context->OMSetDepthStencilState(0, 0);
+}
+
+// --------------------------------------------------------
 // Handle resizing DirectX "stuff" to match the new window size.
 // For instance, updating our projection matrix's aspect ratio.
 // --------------------------------------------------------
@@ -405,15 +578,24 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 		case SceneState::Game:
 			// Draw each entity with lighting
-			entityManager->DrawEntities(context, camera, lights, _countof(lights));
+			entityManager->DrawEntities(context, camera, lights, _countof(lights), skySRV);
+			// Draw the sky after you finish drawing opaque objects
+			DrawSky();
 			break;
 		case SceneState::Main:
+			// Draw the sky after you finish drawing opaque objects
+			DrawSky();
 			menuManager->DisplayMainMenu(spriteBatch);
 			break;
 		case SceneState::GameOver:
+			// Draw the sky after you finish drawing opaque objects
+			DrawSky();
 			menuManager->DisplayGameOverMenu(spriteBatch);
 			break;
 	}
+	// Reset any changed render states!
+	context->RSSetState(0);
+	context->OMSetDepthStencilState(0, 0);
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it

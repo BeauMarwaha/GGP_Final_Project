@@ -21,6 +21,7 @@ public:
 	// GET methods
 	DirectX::XMFLOAT4X4 GetViewMatrix();
 	DirectX::XMFLOAT4X4 GetProjectionMatrix();
+	DirectX::XMFLOAT3 GetPosition();
 
 private:
 	// Matricies holding the camera's current view and projection matrix

@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include "Material.h"
 #include "Collider.h"
+#include "Emitter.h"
 
 // --------------------------------------------------------
 // A Entity class that represents a singular game object
@@ -37,6 +38,7 @@ public:
 	void SetPosition(DirectX::XMFLOAT3 position);
 	void SetRotation(DirectX::XMFLOAT3 rotation);
 	void SetScale(DirectX::XMFLOAT3 scale);
+	void SetUniformScale(float scale);
 	void SetDirection(DirectX::XMFLOAT3 direction);
 	void SetMesh(Mesh* mesh);
 
@@ -47,7 +49,7 @@ public:
 
 	// Helper methods
 	DirectX::XMFLOAT4X4 GetIdentityMatrix();
-	void Draw(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
+	void virtual Draw(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
 	void PrepareMaterial(DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
 
 	float speed;
@@ -56,6 +58,9 @@ public:
 private:
 
 	//I exist to be a change for a small merge to fix master.
+
+	// particle emmiters
+	//Emitter 
 
 protected:
 

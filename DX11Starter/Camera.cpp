@@ -14,12 +14,7 @@ Camera::Camera(unsigned int width, unsigned int height)
 	speed = 5;
 
 	// Set the initial projection matrix
-	XMMATRIX P = XMMatrixPerspectiveFovLH(
-		0.25f * PI,	// Field of View Angle
-		(float)width / height,	// Aspect ratio
-		0.1f,				  	// Near clip plane distance
-		100.0f);			  	// Far clip plane distance
-	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(P)); // Transpose for HLSL!
+	ResizeWindow(width, height);
 }
 
 
@@ -99,12 +94,12 @@ void Camera::Move(float deltaTime, Entity* player, bool debugCameraEnabled)
 	XMStoreFloat4(&playerForward, newForward);
 
 	// Have the camera sit slightly above and behind the player
-	position.x = player->GetPosition().x - (playerForward.x * 2);
-	position.y = player->GetPosition().y + 0.5f;	
-	position.z = player->GetPosition().z - (playerForward.z * 2);
+	position.x = player->GetPosition().x - (playerForward.x * 10);
+	position.y = player->GetPosition().y + 3.0f;	
+	position.z = player->GetPosition().z - (playerForward.z * 10);
 
 	// Have the rotation follow the player
-	xRotation = player->GetRotation().x;
+	xRotation = player->GetRotation().x + .3f;
 	yRotation = fmod(player->GetRotation().y, PI * 2);
 }
 
@@ -132,7 +127,7 @@ void Camera::ResizeWindow(unsigned int width, unsigned int height)
 		0.25f * PI,	// Field of View Angle
 		(float)width / height,	// Aspect ratio
 		0.1f,				  	// Near clip plane distance
-		100.0f);			  	// Far clip plane distance
+		500.0f);			  	// Far clip plane distance
 	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(P)); // Transpose for HLSL!
 }
 
@@ -144,4 +139,9 @@ XMFLOAT4X4 Camera::GetViewMatrix()
 XMFLOAT4X4 Camera::GetProjectionMatrix()
 {
 	return projectionMatrix;
+}
+
+XMFLOAT3 Camera::GetPosition()
+{
+	return position;
 }
