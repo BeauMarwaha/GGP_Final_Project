@@ -572,7 +572,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f,
 		0);
-
 	
 	switch (currentScene)
 	{
@@ -585,12 +584,13 @@ void Game::Draw(float deltaTime, float totalTime)
 		case SceneState::Main:
 			// Draw the sky after you finish drawing opaque objects
 			DrawSky();
-			menuManager->DisplayMainMenu(spriteBatch);
+
+			menuManager->DisplayMainMenu(spriteBatch, context);
 			break;
 		case SceneState::GameOver:
 			// Draw the sky after you finish drawing opaque objects
 			DrawSky();
-			menuManager->DisplayGameOverMenu(spriteBatch);
+			menuManager->DisplayGameOverMenu(spriteBatch, context);
 			break;
 	}
 	// Reset any changed render states!
@@ -637,40 +637,8 @@ void Game::OnMouseUp(WPARAM buttonState, int x, int y)
 			{
 				context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 				// test making a new rasterizer state
-				
-				D3D11_RASTERIZER_DESC rasDesc;
-				ZeroMemory(&rasDesc, sizeof(D3D11_RASTERIZER_DESC));
-
-				rasDesc.FillMode = D3D11_FILL_SOLID;
-				rasDesc.CullMode = D3D11_CULL_BACK;
-				rasDesc.FrontCounterClockwise = true;
-
-				device->CreateRasterizerState(&rasDesc, &rasState);
-				context->RSSetState(rasState);
-
-				// test making new blend state
-				D3D11_BLEND_DESC blendDesc;
-				ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
-
-				D3D11_RENDER_TARGET_BLEND_DESC rtbd;
-				ZeroMemory(&rtbd, sizeof(rtbd));
-
-				rtbd.BlendEnable = true;
-				rtbd.SrcBlend = D3D11_BLEND_SRC_COLOR;
-				rtbd.DestBlend = D3D11_BLEND_BLEND_FACTOR;
-				rtbd.BlendOp = D3D11_BLEND_OP_ADD;
-				rtbd.SrcBlendAlpha = D3D11_BLEND_ONE;
-				rtbd.DestBlendAlpha = D3D11_BLEND_ZERO;
-				rtbd.BlendOpAlpha = D3D11_BLEND_OP_ADD;
-				rtbd.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-				blendDesc.AlphaToCoverageEnable = false;
-				blendDesc.RenderTarget[0] = rtbd;
-
-				device->CreateBlendState(&blendDesc, &blendState);
 
 				//blendDesc.RenderTarget
-				//context->OMSetBlendState(blendState, blendFactor, blendMask);
 
 				currentScene = SceneState::Game;
 			}

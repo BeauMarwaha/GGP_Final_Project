@@ -21,7 +21,7 @@ MenuManager::~MenuManager()
 {
 }
 
-void MenuManager::DisplayMainMenu(DirectX::SpriteBatch * spriteBatch)
+void MenuManager::DisplayMainMenu(DirectX::SpriteBatch * spriteBatch, ID3D11DeviceContext* context)
 {
 	spriteBatch->Begin();
 	const wchar_t* title = L"Asteroids";
@@ -32,10 +32,13 @@ void MenuManager::DisplayMainMenu(DirectX::SpriteBatch * spriteBatch)
 	font->DrawString(spriteBatch, quitButton.text, quitButton.pos, Colors::White, 0.f, quitButton.origin);
 
 	spriteBatch->End();
-	//TODO: Reset blend state and rasterizer state and depth stencil state
+	// Reset blend stateand depth stencil state
+	float blend[4] = { 1,1,1,1 };
+	context->OMSetBlendState(0, blend, 0xffffffff);
+	context->OMSetDepthStencilState(0, 0);
 }
 
-void MenuManager::DisplayGameOverMenu(DirectX::SpriteBatch * spriteBatch)
+void MenuManager::DisplayGameOverMenu(DirectX::SpriteBatch * spriteBatch, ID3D11DeviceContext* context)
 {
 	spriteBatch->Begin();
 	const wchar_t* title = L"Game Over!";
@@ -45,6 +48,11 @@ void MenuManager::DisplayGameOverMenu(DirectX::SpriteBatch * spriteBatch)
 	font->DrawString(spriteBatch, quitButton.text, quitButton.pos, Colors::White, 0.f, quitButton.origin);
 
 	spriteBatch->End();
+
+	// Reset blend stateand depth stencil state
+	float blend[4] = { 1,1,1,1 };
+	context->OMSetBlendState(0, blend, 0xffffffff);
+	context->OMSetDepthStencilState(0, 0);
 }
 
 bool MenuManager::DetectStartClick(int xPos, int yPos)
