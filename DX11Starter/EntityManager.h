@@ -148,7 +148,7 @@ public:
 	// returns a bool if we should change scenes
 	// janky and should probably change but for now
 	// its ok
-	bool UpdateEntities(float deltaTime, float totalTime);
+	bool UpdateEntities(float deltaTime, float totalTime, int * asteroidCount);
 
 	// Draws all entities with lighting
 	void DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[], int lightCount, ID3D11ShaderResourceView* skySRV);
@@ -226,9 +226,6 @@ private:
 	// Collision detection helper method
 	// returns true if collision is found
 	bool CheckForCollision(Entity * entity1, Entity * entity2);
-
-	// Counter for asteroids
-	int asteroidCount = 0;
 	#pragma endregion
 };
 #endif

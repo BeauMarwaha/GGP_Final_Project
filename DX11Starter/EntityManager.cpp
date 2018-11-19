@@ -98,7 +98,7 @@ EntityManager::~EntityManager()
 	names.clear();
 }
 
-bool EntityManager::UpdateEntities(float deltaTime, float totalTime)
+bool EntityManager::UpdateEntities(float deltaTime, float totalTime, int * asteroidCount)
 {
 	// Run the update method on all entities
 	for (auto& entity : entities)
@@ -118,7 +118,7 @@ bool EntityManager::UpdateEntities(float deltaTime, float totalTime)
 						// Bullet vs. Asteroid Collision -- Destroy both of them
 						RemoveEntity(entity.first);
 						RemoveEntity(other.first);
-						asteroidCount--;
+						*asteroidCount--;
 
 						if (asteroidCount <= 0) return true;
 						else return false;
@@ -198,9 +198,6 @@ void EntityManager::CreateEntity(string entityName, string meshName, string mate
 				),
 				meshName,
 				materialName);
-
-			// Increment asteroid count to track them
-			asteroidCount++;
 		}
 		break;
 	case EntityType::Base:

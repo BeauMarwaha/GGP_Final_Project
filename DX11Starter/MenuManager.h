@@ -24,6 +24,7 @@ public:
 	MenuManager(DirectX::SpriteFont * _font);
 	~MenuManager();
 	void DisplayMainMenu(DirectX::SpriteBatch * spriteBatch, ID3D11DeviceContext* context);
+	void DisplayGameHUD(DirectX::SpriteBatch * spriteBatch, ID3D11DeviceContext* context, int asteroidCount);
 	void DisplayGameOverMenu(DirectX::SpriteBatch * spriteBatch, ID3D11DeviceContext* context);
 	bool DetectStartClick(int xPos, int yPos);
 	bool DetectQuitClick(int xPos, int yPos);

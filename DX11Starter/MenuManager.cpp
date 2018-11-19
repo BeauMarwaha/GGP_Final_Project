@@ -38,6 +38,22 @@ void MenuManager::DisplayMainMenu(DirectX::SpriteBatch * spriteBatch, ID3D11Devi
 	context->OMSetDepthStencilState(0, 0);
 }
 
+void MenuManager::DisplayGameHUD(DirectX::SpriteBatch * spriteBatch, ID3D11DeviceContext * context, int asteroidCount)
+{
+	spriteBatch->Begin();
+	const wchar_t* title = L"Asteroids Remaining: ";
+	XMFLOAT2 titleOrigin;
+	XMStoreFloat2(&titleOrigin, font->MeasureString(title) / 2.f);
+	font->DrawString(spriteBatch, title, XMFLOAT2(600, 200), Colors::White, 0.f, titleOrigin);
+
+	spriteBatch->End();
+
+	// Reset blend stateand depth stencil state
+	float blend[4] = { 1,1,1,1 };
+	context->OMSetBlendState(0, blend, 0xffffffff);
+	context->OMSetDepthStencilState(0, 0);
+}
+
 void MenuManager::DisplayGameOverMenu(DirectX::SpriteBatch * spriteBatch, ID3D11DeviceContext* context)
 {
 	spriteBatch->Begin();

@@ -77,6 +77,9 @@ Game::~Game()
 
 	// Delete the sprite batch
 	delete spriteBatch;
+
+	// Delete the asteroid count
+	delete asteroidCount;
 }
 
 // --------------------------------------------------------
@@ -229,6 +232,10 @@ void Game::CreateEntities()
 	entityManager->CreateEntity("Asteroid3", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
 	entityManager->CreateEntity("Asteroid4", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
 	entityManager->CreateEntity("Asteroid5", "Sphere_Mesh", "Asteroid_Material", EntityType::Asteroid);
+
+	// Manually set up asteroid count
+	asteroidCount = new int();
+	*asteroidCount = 6;
 
 	// Create buildings utilizing interior mapping and randomly place them on the outskitrs of the scene
 	for (int i = 0; i < 20; i++)
@@ -453,7 +460,7 @@ void Game::Update(float deltaTime, float totalTime)
 		camera->Update(deltaTime, totalTime, entityManager->GetEntity("Player"), debugCameraEnabled);
 
 		// Update all entities
-		bool playerCollision = entityManager->UpdateEntities(deltaTime, totalTime);
+		bool playerCollision = entityManager->UpdateEntities(deltaTime, totalTime, asteroidCount);
 		if (playerCollision)
 		{
 			currentScene = SceneState::GameOver;
@@ -576,6 +583,9 @@ void Game::Draw(float deltaTime, float totalTime)
 	switch (currentScene)
 	{
 		case SceneState::Game:
+			// Display Game HUD
+			menuManager->DisplayGameHUD(spriteBatch, context, *asteroidCount);
+
 			// Draw each entity with lighting
 			entityManager->DrawEntities(context, camera, lights, _countof(lights), skySRV);
 			// Draw the sky after you finish drawing opaque objects

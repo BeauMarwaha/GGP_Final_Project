@@ -113,5 +113,8 @@ private:
 
 	// Directional Lights
 	DirectionalLight lights[4];
+
+	// Counter for asteroids
+	int * asteroidCount = 0;
 };
 
