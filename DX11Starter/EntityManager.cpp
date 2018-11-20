@@ -807,6 +807,12 @@ void EntityManager::RemoveEmitter(std::string emitterName)
 	emitters.erase(emitterName);
 }
 
+Emitter * EntityManager::GetEmitter(std::string entityName)
+{
+	// Return the specified entity instance
+	return emitters[entityName].emitter;
+}
+
 ID3D11SamplerState* EntityManager::GetSamplerState(string samplerStateName)
 {
 	// Ensure the specfied sampler state exists

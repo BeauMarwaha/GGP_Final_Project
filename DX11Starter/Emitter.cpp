@@ -28,8 +28,8 @@ Emitter::Emitter(
 	// Make the particle array
 	particles = new Particle[maxParticles];
 
-	// Create local particle vertices (easier to update)
-	// Do UV's here, as those will never change
+	// Safe to create our UVs here
+	// also unroll loop a bit, no sense in doing more iterations than needed
 	localParticleVertices = new ParticleVertex[4 * maxParticles];
 	for (int i = 0; i < maxParticles * 4; i += 4)
 	{
@@ -41,8 +41,6 @@ Emitter::Emitter(
 
 
 	// Create buffers for drawing particles
-
-	// DYNAMIC vertex buffer (no initial data necessary)
 	D3D11_BUFFER_DESC vbDesc = {};
 	vbDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
@@ -88,24 +86,16 @@ Emitter::~Emitter()
 void Emitter::Update(float dt)
 {
 	// Update all particles - Check cyclic buffer first
+	// i.e always draw first alive before first dead
 	if (firstAliveIndex < firstDeadIndex)
 	{
-		// First alive is BEFORE first dead, so the "living" particles are contiguous
-		// 
-		// 0 -------- FIRST ALIVE ----------- FIRST DEAD -------- MAX
-		// |    dead    |            alive       |         dead    |
-
-		// First alive is before first dead, so no wrapping
 		for (int i = firstAliveIndex; i < firstDeadIndex; i++)
 			UpdateSingleParticle(dt, i);
 	}
 	else
 	{
-		// First alive is AFTER first dead, so the "living" particles wrap around
-		// 
-		// 0 -------- FIRST DEAD ----------- FIRST ALIVE -------- MAX
-		// |    alive    |            dead       |         alive   |
-
+		// otherwise our living particles will wrap around, this saves
+		// us from making tons of new ones
 		// Update first half (from firstAlive to max particles)
 		for (int i = firstAliveIndex; i < maxParticles; i++)
 			UpdateSingleParticle(dt, i);
@@ -172,7 +162,7 @@ void Emitter::UpdateSingleParticle(float dt, int index)
 
 void Emitter::SpawnParticle()
 {
-	// Any left to spawn?
+	// Check if there are any particles that need to spawn
 	if (livingParticleCount == maxParticles)
 		return;
 

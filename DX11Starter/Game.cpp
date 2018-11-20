@@ -33,7 +33,7 @@ Game::Game(HINSTANCE hInstance)
 
 	// Set the game state to the debug scene
 	state = GameState::Game;
-	currentScene = SceneState::Game;
+	currentScene = SceneState::Main;
 
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
@@ -218,6 +218,16 @@ void Game::CreateEntities()
 
 	// Create emitters and pass them to entities
 	entityManager->CreateEmitter("Exhaust_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
+	entityManager->CreateEmitter("Test_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
+	entityManager->GetEmitter("Test_Emitter")->SetParticlesPerSecod(100);
+	entityManager->GetEmitter("Test_Emitter")->SetLifetime(2);
+	entityManager->GetEmitter("Test_Emitter")->SetStartSize(0.1f);
+	entityManager->GetEmitter("Test_Emitter")->SetEndSize(5.0f);
+	entityManager->GetEmitter("Test_Emitter")->SetStartColor(XMFLOAT4(0.1f, 0.1f, 1, 0.2f));
+	entityManager->GetEmitter("Test_Emitter")->SetEndColor(XMFLOAT4(0.1f, 0.6f, 1, 0.0f));
+	entityManager->GetEmitter("Test_Emitter")->SetEmitterVelocity(XMFLOAT3(0, 0, -4));
+	entityManager->GetEmitter("Test_Emitter")->SetEmitterPosition(XMFLOAT3(0, 0, 0));
+	entityManager->GetEmitter("Test_Emitter")->SetEmitterAcceleration(XMFLOAT3(0, 0, 0));
 
 	// Create entities using the previously set up resources
 	entityManager->CreateEntityWithEmitter("Player", "SpaceShip_Mesh", "SpaceShip_Material", "Exhaust_Emitter", EntityType::Player);
@@ -449,6 +459,9 @@ void Game::Update(float deltaTime, float totalTime)
 		// Update the camera
 		camera->Update(deltaTime, totalTime, entityManager->GetEntity("Player"), debugCameraEnabled);
 
+		// Update the test emitter
+		entityManager->GetEmitter("Test_Emitter")->Update(deltaTime);
+
 		// Update all entities
 		bool playerCollision = entityManager->UpdateEntities(deltaTime, totalTime);
 		if (playerCollision)
@@ -578,9 +591,13 @@ void Game::Draw(float deltaTime, float totalTime)
 			entityManager->DrawEntities(context, camera, lights, _countof(lights), skySRV);
 			// Draw the sky after you finish drawing opaque objects
 			DrawSky();
+
+			// Draw test emitter to see if drawing after skybox makes a difference
+			entityManager->GetEmitter("Test_Emitter")->Draw(context, camera->GetViewMatrix(), camera->GetProjectionMatrix());
 			break;
 		case SceneState::Main:
 			// Draw the sky after you finish drawing opaque objects
+			
 			DrawSky();
 			menuManager->DisplayMainMenu(spriteBatch);
 			break;

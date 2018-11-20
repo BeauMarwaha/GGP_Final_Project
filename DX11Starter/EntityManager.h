@@ -189,6 +189,7 @@ public:
 	// Emitter Helper Methods
 	void CreateEmitter(std::string emitterName, ID3D11Device* device, std::string vs, std::string ps, std::string texture, ID3D11DepthStencilState* particleDepthState, ID3D11BlendState* particleBlendState);
 	void RemoveEmitter(std::string emitterName);
+	Emitter * GetEmitter(std::string entityName);
 	#pragma endregion
 
 private:

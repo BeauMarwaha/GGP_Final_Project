@@ -22,6 +22,8 @@ struct ParticleVertex
 	float Size;
 };
 
+// Currently doing CPU based emissions
+// We eventually want to switch it over to GPU-CPU hybrid
 class Emitter
 {
 public:
