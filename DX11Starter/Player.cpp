@@ -94,7 +94,7 @@ void Player::Update(float deltaTime, float totalTime)
 	XMStoreFloat3(&direction, XMVector3Rotate(XMLoadFloat3(&orig), XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&rotation))));
 
 	Entity::Update(deltaTime, totalTime);
-	exhaustEmitter->Update(deltaTime);
+	/*exhaustEmitter->Update(deltaTime);*/
 }
 
 void Player::SetEntityManager(EntityManager * entityManager)
@@ -107,7 +107,7 @@ void Player::Draw(ID3D11DeviceContext * context, XMFLOAT4X4 viewMatrix, XMFLOAT4
 	Entity::Draw(context, viewMatrix, projectionMatrix);
 
 	// Drawing particle systems
-	exhaustEmitter->Draw(context, viewMatrix, projectionMatrix); // Draw the emitter
+	//exhaustEmitter->Draw(context, viewMatrix, projectionMatrix); // Draw the emitter
 }
 
 void Player::Shoot(float totalTime)
