@@ -245,7 +245,7 @@ void Game::CreateEntities()
 
 	// Manually set up asteroid count
 	asteroidCount = new int();
-	*asteroidCount = 6;
+	*asteroidCount = 5;
 
 	// Create buildings utilizing interior mapping and randomly place them on the outskitrs of the scene
 	for (int i = 0; i < 20; i++)
@@ -597,13 +597,13 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 		case SceneState::Game:
 			// Display Game HUD
-			menuManager->DisplayGameHUD(spriteBatch, context, *asteroidCount);
+			
 
 			// Draw each entity with lighting
 			entityManager->DrawEntities(context, camera, lights, _countof(lights), skySRV);
 			// Draw the sky after you finish drawing opaque objects
 			DrawSky();
-
+			menuManager->DisplayGameHUD(spriteBatch, context, *asteroidCount);
 			// Draw test emitter to see if drawing after skybox makes a difference
 			entityManager->GetEmitter("Test_Emitter")->Draw(context, camera->GetViewMatrix(), camera->GetProjectionMatrix());
 			break;

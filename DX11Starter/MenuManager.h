@@ -3,6 +3,8 @@
 #include <d3d11.h>
 #include <SpriteFont.h>
 #include <SpriteBatch.h>
+#include <string>
+#include <iostream>
 
 struct Button
 {

@@ -118,9 +118,9 @@ bool EntityManager::UpdateEntities(float deltaTime, float totalTime, int * aster
 						// Bullet vs. Asteroid Collision -- Destroy both of them
 						RemoveEntity(entity.first);
 						RemoveEntity(other.first);
-						*asteroidCount--;
+						(*asteroidCount)--;
 
-						if (asteroidCount <= 0) return true;
+						if (*asteroidCount <= 0) return true;
 						else return false;
 					}
 				}

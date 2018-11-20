@@ -40,11 +40,14 @@ void MenuManager::DisplayMainMenu(DirectX::SpriteBatch * spriteBatch, ID3D11Devi
 
 void MenuManager::DisplayGameHUD(DirectX::SpriteBatch * spriteBatch, ID3D11DeviceContext * context, int asteroidCount)
 {
+	std::wstring titleS = L"Asteroids Remaining: ";
+	titleS += std::to_wstring(asteroidCount);
+
 	spriteBatch->Begin();
-	const wchar_t* title = L"Asteroids Remaining: ";
+	const wchar_t* title = titleS.c_str();
 	XMFLOAT2 titleOrigin;
 	XMStoreFloat2(&titleOrigin, font->MeasureString(title) / 2.f);
-	font->DrawString(spriteBatch, title, XMFLOAT2(600, 200), Colors::White, 0.f, titleOrigin);
+	font->DrawString(spriteBatch, title, XMFLOAT2(300, 650), Colors::White, 0.f, titleOrigin);
 
 	spriteBatch->End();
 
