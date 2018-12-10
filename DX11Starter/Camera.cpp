@@ -11,7 +11,7 @@ Camera::Camera(unsigned int width, unsigned int height)
 	position = XMFLOAT3(0, 0, -5);
 	xRotation = 0;
 	yRotation = 0;
-	speed = 5;
+	speed = 30;
 
 	// Set the initial projection matrix
 	ResizeWindow(width, height);

@@ -126,16 +126,16 @@ void Game::CreateLights()
 {
 	// Set up the directional light sources
 	lights[0].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
-	lights[0].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
+	lights[0].DiffuseColor = XMFLOAT4(.5, .5, .5, 1);
 	lights[0].Direction = XMFLOAT3(1, -1, 0);
 	lights[1].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
-	lights[1].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
+	lights[1].DiffuseColor = XMFLOAT4(.5, .5, .5, 1);
 	lights[1].Direction = XMFLOAT3(-1, 1, 0);
 	lights[2].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
-	lights[2].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
+	lights[2].DiffuseColor = XMFLOAT4(.5, .5, .5, 1);
 	lights[2].Direction = XMFLOAT3(-1, -1, 0);
 	lights[3].AmbientColor = XMFLOAT4(0.01f, 0.01f, 0.01f, 1.0f);
-	lights[3].DiffuseColor = XMFLOAT4(1, 1, 1, 1);
+	lights[3].DiffuseColor = XMFLOAT4(.5, .5, .5, 1);
 	lights[3].Direction = XMFLOAT3(1, 1, 0);
 }
 

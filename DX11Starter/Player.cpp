@@ -49,22 +49,20 @@ void Player::Update(float deltaTime, float totalTime)
 {
 	if (GetAsyncKeyState('W') & 0x8000)
 	{
-		speed += .003f;
+		speed += 3.0f * deltaTime;
 
-		if (speed >= 5.0f)
+		if (speed >= 25.0f)
 		{
-
-			speed = 5.0f;
-
+			speed = 25.0f;
 		}
 	}
 	else if (GetAsyncKeyState('S') & 0x8000)
 	{
-		speed -= .003f;
+		speed -= 3.0f * deltaTime;
 
-		if (speed <= -5.0f)
+		if (speed <= -25.0f)
 		{
-			speed = -5.0f;
+			speed = -25.0f;
 		}
 	}
 	else 
