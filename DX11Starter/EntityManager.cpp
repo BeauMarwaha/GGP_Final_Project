@@ -607,21 +607,16 @@ void EntityManager::CreateShaderResourceView(string shaderResourceViewName, ID3D
 	shaderResourceViews[shaderResourceViewName] = SmartShaderResourceView(shaderResourceView, 0);
 }
 
-void EntityManager::CreateInteriorMappingDDSShaderResourceView(std::string shaderResourceViewName, ID3D11Device * device, ID3D11DeviceContext * context, LPCWSTR textureFile)
+void EntityManager::CreateInteriorMappingDDSShaderResourceView(std::string shaderResourceViewName, ID3D11Device * device, ID3D11DeviceContext * context, LPCWSTR * textureFiles, int textureFileCount)
 {
 	// Load all of the interior cube maps
-	int numCubeMaps = 8;
-	ID3D11Resource** interiors = new ID3D11Resource*[numCubeMaps];
-	ID3D11ShaderResourceView** infos = new ID3D11ShaderResourceView*[numCubeMaps];
+	ID3D11Resource** interiors = new ID3D11Resource*[textureFileCount];
+	ID3D11ShaderResourceView** infos = new ID3D11ShaderResourceView*[textureFileCount];
 	
-	CreateDDSTextureFromFile(device, context, textureFile, &interiors[0], &infos[0]);
-	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapDark.dds", &interiors[1], &infos[1]);
-	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapBrick.dds", &interiors[2], &infos[2]);
-	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapBrickDark.dds", &interiors[3], &infos[3]);
-	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapBrown.dds", &interiors[4], &infos[4]);
-	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapBrownDark.dds", &interiors[5], &infos[5]);
-	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapWhiteboard.dds", &interiors[6], &infos[6]);
-	CreateDDSTextureFromFile(device, context, L"resources/textures/InteriorMaps/OfficeCubeMapWhiteboardDark.dds", &interiors[7], &infos[7]);
+	for (int i = 0; i < textureFileCount; i++)
+	{
+		CreateDDSTextureFromFile(device, context, textureFiles[i], &interiors[i], &infos[i]);
+	}
 
 	// Grab the desc of the info SRV
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
@@ -630,7 +625,7 @@ void EntityManager::CreateInteriorMappingDDSShaderResourceView(std::string shade
 
 	// Create a cube map array
 	D3D11_TEXTURE2D_DESC cubeDesc = {};
-	cubeDesc.ArraySize = 6 * numCubeMaps; // 6 faces per cube * total cubes
+	cubeDesc.ArraySize = 6 * textureFileCount; // 6 faces per cube * total cubes
 	cubeDesc.Height = 256;
 	cubeDesc.Width = 256;
 	cubeDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -654,7 +649,7 @@ void EntityManager::CreateInteriorMappingDDSShaderResourceView(std::string shade
 	box.back = 1;
 
 	// Copy all textures into this one
-	for (int cube = 0; cube < numCubeMaps; cube++)
+	for (int cube = 0; cube < textureFileCount; cube++)
 	{
 		for (int face = 0; face < 6; face++)
 		{
@@ -683,7 +678,7 @@ void EntityManager::CreateInteriorMappingDDSShaderResourceView(std::string shade
 	finalSRVDesc.TextureCubeArray.First2DArrayFace = 0;
 	finalSRVDesc.TextureCubeArray.MipLevels = mipLevels;
 	finalSRVDesc.TextureCubeArray.MostDetailedMip = 0;
-	finalSRVDesc.TextureCubeArray.NumCubes = numCubeMaps;
+	finalSRVDesc.TextureCubeArray.NumCubes = textureFileCount;
 	finalSRVDesc.Format = cubeDesc.Format;
 
 	ID3D11ShaderResourceView* interiorCubeSRV;
@@ -694,7 +689,7 @@ void EntityManager::CreateInteriorMappingDDSShaderResourceView(std::string shade
 
 	// Done!  Clean up everything we don't need
 	cubeArrayTexture->Release();
-	for (int i = 0; i < numCubeMaps; i++) {
+	for (int i = 0; i < textureFileCount; i++) {
 		infos[i]->Release();
 		interiors[i]->Release();
 	}

@@ -179,7 +179,7 @@ public:
 
 	// Shader Resource View Helper Methods
 	void CreateShaderResourceView(std::string shaderResourceViewName, ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile);
-	void CreateInteriorMappingDDSShaderResourceView(std::string shaderResourceViewName, ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR textureFile);
+	void CreateInteriorMappingDDSShaderResourceView(std::string shaderResourceViewName, ID3D11Device* device, ID3D11DeviceContext* context, LPCWSTR* textureFiles, int textureFileCount);
 	void RemoveShaderResourceView(std::string shaderResourceViewName);
 
 	// Sampler State Helper Methods
@@ -190,6 +190,10 @@ public:
 	void CreateEmitter(std::string emitterName, ID3D11Device* device, std::string vs, std::string ps, std::string texture, ID3D11DepthStencilState* particleDepthState, ID3D11BlendState* particleBlendState);
 	void RemoveEmitter(std::string emitterName);
 	Emitter * GetEmitter(std::string entityName);
+
+	// Collision detection helper method
+	// returns true if collision is found
+	bool CheckForCollision(Entity * entity1, Entity * entity2);
 	#pragma endregion
 
 private:
@@ -223,10 +227,6 @@ private:
 
 	// Sampler State Helper Methods
 	ID3D11SamplerState* GetSamplerState(std::string samplerStateName);
-
-	// Collision detection helper method
-	// returns true if collision is found
-	bool CheckForCollision(Entity * entity1, Entity * entity2);
 	#pragma endregion
 };
 #endif

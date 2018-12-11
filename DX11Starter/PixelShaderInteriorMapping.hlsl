@@ -78,7 +78,7 @@ float3 RandomCubeRotation(float3 direction, float2 seed)
 }
 
 // Use tangent space calculations?
-//#define TANGENT_SPACE
+#define TANGENT_SPACE
 
 // --------------------------------------------------------
 // The entry point (main method) for our pixel shader

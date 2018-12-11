@@ -165,13 +165,24 @@ void Game::CreateEntities()
 	entityManager->CreatePixelShader("InteriorMapping_Pixel_Shader", device, context, L"PixelShaderInteriorMapping.cso");
 	entityManager->CreatePixelShader("Particle_Pixel_Shader", device, context, L"PixelShaderParticle.cso");
 
-	// Create the rock shader resource view
+	// Create the shader resource views
 	entityManager->CreateShaderResourceView("Cliff_Texture", device, context, L"resources/textures/CliffLayered_bc.tif");
 	entityManager->CreateShaderResourceView("Cliff_Normal_Texture", device, context, L"resources/textures/CliffLayered_normal.tif");
 	entityManager->CreateShaderResourceView("SpaceShip_Texture", device, context, L"resources/textures/SpaceShip/SpaceShip_bc.png");
 	entityManager->CreateShaderResourceView("SpaceShip_Normal_Texture", device, context, L"resources/textures/SpaceShip/SpaceShip_normal.png");
 	entityManager->CreateShaderResourceView("Bullet_Texture", device, context, L"resources/textures/Bullet_bc.png");
-	entityManager->CreateInteriorMappingDDSShaderResourceView("InteriorMap_Texture", device, context, L"resources/textures/InteriorMaps/OfficeCubeMap.dds");
+
+	// Create the interior mapping shader resource view
+	LPCWSTR textureFiles[8];
+	textureFiles[0] = L"resources/textures/InteriorMaps/OfficeCubeMap.dds";
+	textureFiles[1] = L"resources/textures/InteriorMaps/OfficeCubeMapDark.dds";
+	textureFiles[2] = L"resources/textures/InteriorMaps/OfficeCubeMapBrick.dds";
+	textureFiles[3] = L"resources/textures/InteriorMaps/OfficeCubeMapBrickDark.dds";
+	textureFiles[4] = L"resources/textures/InteriorMaps/OfficeCubeMapBrown.dds";
+	textureFiles[5] = L"resources/textures/InteriorMaps/OfficeCubeMapBrownDark.dds";
+	textureFiles[6] = L"resources/textures/InteriorMaps/OfficeCubeMapWhiteboard.dds";
+	textureFiles[7] = L"resources/textures/InteriorMaps/OfficeCubeMapWhiteboardDark.dds";
+	entityManager->CreateInteriorMappingDDSShaderResourceView("InteriorMap_Texture", device, context, textureFiles, 8);
 
 	// Create particle textures
 	//entityManager->CreateShaderResourceView("fireParticle", device, context, L"resources/textures/SpaceShip/fireParticle.jpg");
@@ -220,7 +231,11 @@ void Game::CreateEntities()
 	entityManager->CreateMesh("Sphere_Mesh", device, "resources/models/sphere.obj");
 	entityManager->CreateMesh("SpaceShip_Mesh", device, "resources/models/SpaceShip.obj");
 	entityManager->CreateMesh("Bullet_Mesh", device, "resources/models/bullet.obj");
-	entityManager->CreateMesh("Cube_Mesh", device, "resources/models/cube.obj"); 
+	entityManager->CreateMesh("Building_Mesh_01", device, "resources/models/cube.obj");
+	entityManager->CreateMesh("Building_Mesh_02", device, "resources/models/cube.obj");
+	entityManager->CreateMesh("Building_Mesh_03", device, "resources/models/helix.obj");
+	entityManager->CreateMesh("Building_Mesh_04", device, "resources/models/cylinder.obj");
+	entityManager->CreateMesh("Building_Mesh_05", device, "resources/models/cylinder.obj");
 
 	// Create emitters and pass them to entities
 	entityManager->CreateEmitter("Exhaust_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
@@ -248,24 +263,53 @@ void Game::CreateEntities()
 	*asteroidCount = 5;
 
 	// Create buildings utilizing interior mapping and randomly place them on the outskitrs of the scene
-	for (int i = 0; i < 20; i++)
+	std::vector<int> collidingBuildings = std::vector<int>();
+	for (int i = 0; i < 100; i++)
 	{
+		// Create the building entity
 		std::string name = "Building_" + std::to_string(i);
-		entityManager->CreateEntity(name, "Cube_Mesh", "InteriorMapping_Material", EntityType::Base);
+		entityManager->CreateEntity(name, "Building_Mesh_0" + std::to_string(rand() % 5 + 1), "InteriorMapping_Material", EntityType::Base);
 
+		// Generate and set building entity scale and rotation
+		float scale = rand() % 30 + 10;
+		entityManager->GetEntity(name)->SetUniformScale(scale);
+		entityManager->GetEntity(name)->SetRotation(XMFLOAT3(rand() % 180, rand() % 180, rand() % 180));
+
+		// Generate and set the building's x and z position
 		float x = 0;
 		float z = 0;
 		float minDist = 100;
-		float scale = 100;
+		float scaleDistance = 150;
+
+		// Generate a semi-random x and y co-ordinate for the building
 		do
 		{
 			x = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) * 2 - 1;
-			x *= scale;
+			x *= scaleDistance;
 			z = static_cast <float> (rand()) / static_cast <float> (RAND_MAX) * 2 - 1;
-			z *= scale;
+			z *= scaleDistance;
 		} while ((x < minDist && x > -minDist) && (z < minDist && z > -minDist));
 		entityManager->GetEntity(name)->SetPosition(XMFLOAT3(x, 0, z));
-		entityManager->GetEntity(name)->SetUniformScale(rand() % 30 + 10);
+
+		// Check to see if this building is colliding with any others using simple circle collision
+		bool colliding = false;
+		for (int j = i - 1; j >= 0; j--)
+		{
+			// Make sure the other building actually exists
+			if (std::find(collidingBuildings.begin(), collidingBuildings.end(), j) == collidingBuildings.end()) {
+				if (entityManager->CheckForCollision(entityManager->GetEntity(name), entityManager->GetEntity("Building_" + std::to_string(j))))
+				{
+					colliding = true;
+				}
+			}
+		}
+
+		// If the building entity is colliding, remove it
+		if (colliding)
+		{
+			entityManager->RemoveEntity(name);
+			collidingBuildings.push_back(i);
+		}
 	}
 }
 
