@@ -6,6 +6,7 @@
 #include "DirectionalLight.h"
 #include "EntityManager.h"
 #include "MenuManager.h"
+#include "Player.h"
 #include <DirectXMath.h>
 #include <SpriteFont.h>
 #include <SpriteBatch.h>

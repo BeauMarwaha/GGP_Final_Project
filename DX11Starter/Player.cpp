@@ -29,13 +29,13 @@ Player::Player(Mesh* m, Material* mat, int type, Emitter * E_M_I_T) :
 	// Set emitter values
 	//exhaustEmitter->SetMaxParticles(100);
 	exhaustEmitter->SetParticlesPerSecod(100);
-	exhaustEmitter->SetLifetime(5);
+	exhaustEmitter->SetLifetime(2);
 	exhaustEmitter->SetStartSize(0.1f);
 	exhaustEmitter->SetEndSize(5.0f);
-	exhaustEmitter->SetStartColor(XMFLOAT4(1, 0.1f, 0.1f, 0.2f));
-	exhaustEmitter->SetEndColor(XMFLOAT4(1, 0.6f, 0.1f, 0.0f));
-	exhaustEmitter->SetEmitterVelocity(XMFLOAT3(0, 0, -1));
-	exhaustEmitter->SetEmitterPosition(position);
+	exhaustEmitter->SetStartColor(XMFLOAT4(0.1f, 0.1f, 1, 0.2f));
+	exhaustEmitter->SetEndColor(XMFLOAT4(0.1f, 0.6f, 1, 0.0f));
+	exhaustEmitter->SetEmitterVelocity(XMFLOAT3(0, 0, -4));
+	exhaustEmitter->SetEmitterPosition(XMFLOAT3(0, 0, 0));
 	exhaustEmitter->SetEmitterAcceleration(XMFLOAT3(0, 0, 0));
 }
 
@@ -92,7 +92,7 @@ void Player::Update(float deltaTime, float totalTime)
 	XMStoreFloat3(&direction, XMVector3Rotate(XMLoadFloat3(&orig), XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&rotation))));
 
 	Entity::Update(deltaTime, totalTime);
-	/*exhaustEmitter->Update(deltaTime);*/
+	exhaustEmitter->Update(deltaTime);
 }
 
 void Player::SetEntityManager(EntityManager * entityManager)
@@ -100,12 +100,10 @@ void Player::SetEntityManager(EntityManager * entityManager)
 	this->entityManager = entityManager;
 }
 
-void Player::Draw(ID3D11DeviceContext * context, XMFLOAT4X4 viewMatrix, XMFLOAT4X4 projectionMatrix)
-{
-	Entity::Draw(context, viewMatrix, projectionMatrix);
 
-	// Drawing particle systems
-	//exhaustEmitter->Draw(context, viewMatrix, projectionMatrix); // Draw the emitter
+void Player::DrawEmitter(ID3D11DeviceContext * context, DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix)
+{
+	exhaustEmitter->Draw(context, viewMatrix, projectionMatrix); // Draw the emitter
 }
 
 void Player::Shoot(float totalTime)

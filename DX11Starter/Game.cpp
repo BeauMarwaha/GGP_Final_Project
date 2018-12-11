@@ -239,16 +239,8 @@ void Game::CreateEntities()
 
 	// Create emitters and pass them to entities
 	entityManager->CreateEmitter("Exhaust_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
-	entityManager->CreateEmitter("Test_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
-	entityManager->GetEmitter("Test_Emitter")->SetParticlesPerSecod(100);
-	entityManager->GetEmitter("Test_Emitter")->SetLifetime(2);
-	entityManager->GetEmitter("Test_Emitter")->SetStartSize(0.1f);
-	entityManager->GetEmitter("Test_Emitter")->SetEndSize(5.0f);
-	entityManager->GetEmitter("Test_Emitter")->SetStartColor(XMFLOAT4(0.1f, 0.1f, 1, 0.2f));
-	entityManager->GetEmitter("Test_Emitter")->SetEndColor(XMFLOAT4(0.1f, 0.6f, 1, 0.0f));
-	entityManager->GetEmitter("Test_Emitter")->SetEmitterVelocity(XMFLOAT3(0, 0, -4));
-	entityManager->GetEmitter("Test_Emitter")->SetEmitterPosition(XMFLOAT3(0, 0, 0));
-	entityManager->GetEmitter("Test_Emitter")->SetEmitterAcceleration(XMFLOAT3(0, 0, 0));
+	//entityManager->CreateEmitter("Test_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
+	
 
 	// Create entities using the previously set up resources
 	entityManager->CreateEntityWithEmitter("Player", "SpaceShip_Mesh", "SpaceShip_Material", "Exhaust_Emitter", EntityType::Player);
@@ -514,7 +506,7 @@ void Game::Update(float deltaTime, float totalTime)
 		camera->Update(deltaTime, totalTime, entityManager->GetEntity("Player"), debugCameraEnabled);
 
 		// Update the test emitter
-		entityManager->GetEmitter("Test_Emitter")->Update(deltaTime);
+		//entityManager->GetEmitter("Test_Emitter")->Update(deltaTime);
 
 		// Update all entities
 		bool playerCollision = entityManager->UpdateEntities(deltaTime, totalTime, asteroidCount);
@@ -648,8 +640,9 @@ void Game::Draw(float deltaTime, float totalTime)
 			// Draw the sky after you finish drawing opaque objects
 			DrawSky();
 			menuManager->DisplayGameHUD(spriteBatch, context, *asteroidCount);
-			// Draw test emitter to see if drawing after skybox makes a difference
-			entityManager->GetEmitter("Test_Emitter")->Draw(context, camera->GetViewMatrix(), camera->GetProjectionMatrix());
+
+			// Draw player's emitter
+			((Player *)entityManager->GetEntity("Player"))->DrawEmitter(context, camera->GetViewMatrix(), camera->GetProjectionMatrix());
 			break;
 		case SceneState::Main:
 			// Draw the sky after you finish drawing opaque objects

@@ -21,7 +21,7 @@ public:
 	void SetEntityManager(EntityManager* entityManager);
 
 	// Overrride base draw for particles
-	void Draw(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix) override;
+	void DrawEmitter(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
 
 private:
 	// Shoot a bullet
