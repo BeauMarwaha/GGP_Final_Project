@@ -90,10 +90,19 @@ void Player::Update(float deltaTime, float totalTime)
 	// Update the direction of the player based on rotation
 	XMFLOAT3 orig = XMFLOAT3(0, 0, 1);
 	XMStoreFloat3(&direction, XMVector3Rotate(XMLoadFloat3(&orig), XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&rotation))));
+	/*XMFLOAT3 actualDirection = XMFLOAT3();
+	XMStoreFloat3(&actualDirection, moveDir);*/
+
+	XMFLOAT3 emitterPosition = XMFLOAT3();
+	XMStoreFloat3(&emitterPosition, XMVectorAdd(XMLoadFloat3(&position), XMVectorScale(XMLoadFloat3(&direction), -2)));
+	
+	XMFLOAT3 emitterVelocity = XMFLOAT3();
+	XMStoreFloat3(&emitterVelocity, XMVectorScale(XMLoadFloat3(&direction), -3));
 
 	Entity::Update(deltaTime, totalTime);
 	// update the emitter pos based on where we are
-	exhaustEmitter->SetEmitterPosition(position);
+	exhaustEmitter->SetEmitterPosition(emitterPosition);
+	exhaustEmitter->SetEmitterVelocity(emitterVelocity);
 
 	exhaustEmitter->Update(deltaTime);
 }

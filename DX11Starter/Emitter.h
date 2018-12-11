@@ -46,6 +46,8 @@ public:
 	void CopyOneParticle(int index);
 	void Draw(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
 
+	DirectX::XMFLOAT3 GetEmitterPosition();
+
 	#pragma region setters
 	void SetMaxParticles(int _maxParticles);
 	void SetParticlesPerSecod(int _particlesPerSecond);

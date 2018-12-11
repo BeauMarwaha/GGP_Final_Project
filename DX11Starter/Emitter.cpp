@@ -277,6 +277,11 @@ void Emitter::Draw(ID3D11DeviceContext* context, XMFLOAT4X4 viewMatrix, XMFLOAT4
 
 }
 
+DirectX::XMFLOAT3 Emitter::GetEmitterPosition()
+{
+	return emitterPosition;
+}
+
 void Emitter::SetMaxParticles(int _maxParticles)
 {
 	maxParticles = _maxParticles;
