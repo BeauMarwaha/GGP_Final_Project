@@ -92,6 +92,9 @@ void Player::Update(float deltaTime, float totalTime)
 	XMStoreFloat3(&direction, XMVector3Rotate(XMLoadFloat3(&orig), XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&rotation))));
 
 	Entity::Update(deltaTime, totalTime);
+	// update the emitter pos based on where we are
+	exhaustEmitter->SetEmitterPosition(position);
+
 	exhaustEmitter->Update(deltaTime);
 }
 
