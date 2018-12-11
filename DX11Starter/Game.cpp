@@ -88,7 +88,7 @@ Game::~Game()
 // --------------------------------------------------------
 void Game::Init()
 {
-	font = new SpriteFont(device, L"resources/fonts/MenuFont.spritefont");
+	font = new SpriteFont(device, L"resources/fonts/myfile.spritefont");
 	menuManager = new MenuManager(font);
 	// Initialize SpriteBatch
 	spriteBatch = new SpriteBatch(context);
