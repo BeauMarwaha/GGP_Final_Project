@@ -233,9 +233,9 @@ void Game::CreateEntities()
 	entityManager->CreateMesh("Bullet_Mesh", device, "resources/models/bullet.obj");
 	entityManager->CreateMesh("Building_Mesh_01", device, "resources/models/cube.obj");
 	entityManager->CreateMesh("Building_Mesh_02", device, "resources/models/cube.obj");
-	entityManager->CreateMesh("Building_Mesh_03", device, "resources/models/helix.obj");
+	entityManager->CreateMesh("Building_Mesh_03", device, "resources/models/cylinder.obj");
 	entityManager->CreateMesh("Building_Mesh_04", device, "resources/models/cylinder.obj");
-	entityManager->CreateMesh("Building_Mesh_05", device, "resources/models/cylinder.obj");
+	entityManager->CreateMesh("Building_Mesh_05", device, "resources/models/helix.obj");
 
 	// Create emitters and pass them to entities
 	entityManager->CreateEmitter("Exhaust_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
@@ -260,7 +260,15 @@ void Game::CreateEntities()
 	{
 		// Create the building entity
 		std::string name = "Building_" + std::to_string(i);
-		entityManager->CreateEntity(name, "Building_Mesh_0" + std::to_string(rand() % 5 + 1), "InteriorMapping_Material", EntityType::Base);
+		int hasEmitter = rand();
+
+		if (hasEmitter % 2 == 0)
+			entityManager->CreateEntity(name, "Building_Mesh_0" + std::to_string(rand() % 5 + 1), "InteriorMapping_Material", EntityType::Base);
+		else
+		{
+			entityManager->CreateEmitter(name + "_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
+			entityManager->CreateEntityWithEmitter(name, "Building_Mesh_0" + std::to_string(rand() % 4 + 1), "InteriorMapping_Material", name + "_Emitter", EntityType::Base);
+		}
 
 		// Generate and set building entity scale and rotation
 		float scale = rand() % 30 + 10;
@@ -282,6 +290,9 @@ void Game::CreateEntities()
 			z *= scaleDistance;
 		} while ((x < minDist && x > -minDist) && (z < minDist && z > -minDist));
 		entityManager->GetEntity(name)->SetPosition(XMFLOAT3(x, 0, z));
+
+		if(!(hasEmitter % 2 ==0))
+			entityManager->GetEntity(name)->GetEmitter()->SetEmitterPosition(XMFLOAT3(x, 0, z));
 
 		// Check to see if this building is colliding with any others using simple circle collision
 		bool colliding = false;

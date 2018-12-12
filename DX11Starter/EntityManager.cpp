@@ -301,6 +301,19 @@ void EntityManager::CreateEntityWithEmitter(std::string entityName, std::string 
 		play->SetEntityManager(this);
 	}
 	break;
+	case EntityType::Base:
+	{
+		// Create a new entity using the given mesh and material and assign it to the entity map
+		entities[entityName] = SmartEntity(
+			new Entity(
+				GetMesh(meshName),
+				GetMaterial(materialName),
+				(int)EntityType::Base
+			),
+			meshName,
+			materialName);
+	}
+	break;
 	}
 }
 

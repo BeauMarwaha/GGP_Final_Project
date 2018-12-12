@@ -13,6 +13,7 @@ class Entity
 {
 public:
 	Entity(Mesh* mesh, Material* material, int type); // Constructor
+	Entity(Mesh* mesh, Material* material, int type, Emitter* emitter); // Constructor with emitter
 	Entity(Entity const& other); // Copy Constructor
 	Entity& operator=(Entity const& other); // Copy Assignment Operator
 	bool operator==(Entity const& other);
@@ -32,6 +33,7 @@ public:
 	int GetType();
 	Collider GetCollider();
 	Mesh* GetMesh();
+	Emitter* GetEmitter();
 
 	// SET methods
 	void SetWorldMatrix(DirectX::XMFLOAT4X4 worldMatrix);
@@ -60,7 +62,7 @@ private:
 	//I exist to be a change for a small merge to fix master.
 
 	// particle emmiters
-	//Emitter 
+	Emitter* emitter = nullptr;
 
 protected:
 

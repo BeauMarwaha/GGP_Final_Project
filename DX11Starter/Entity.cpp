@@ -29,6 +29,45 @@ Entity::Entity(Mesh* mesh, Material* material, int type)
 	isWorldDirty = false;
 }
 
+Entity::Entity(Mesh * mesh, Material * material, int type, Emitter * emitter)
+{
+	// Use the passed in mesh and material
+	this->mesh = mesh;
+	this->material = material;
+	this->type = type;
+	this->emitter = emitter;
+
+	// Set the location and movement vectors and matrix to default values
+	position = XMFLOAT3(0, 0, 0);
+	rotation = XMFLOAT3(0, 0, 0);
+	scale = XMFLOAT3(1, 1, 1);
+	velocity = XMFLOAT3(0, 0, 0);
+	direction = XMFLOAT3(0, 0, 1);
+	maxSpeed = 0;
+
+	worldMatrix = GetIdentityMatrix();
+
+	speed = 0.0f;
+	moveDir = XMVECTOR();
+
+	// Assign the default collider from the mesh to the entity
+	this->collider = mesh->GetCollider(ColliderKey());
+
+	// Set emitter values
+	//exhaustEmitter->SetMaxParticles(100);
+	emitter->SetParticlesPerSecod(100);
+	emitter->SetLifetime(2);
+	emitter->SetStartSize(0.1f);
+	emitter->SetEndSize(5.0f);
+	emitter->SetStartColor(XMFLOAT4(1, 0.1f, 0.1f, 0.2f));
+	emitter->SetEndColor(XMFLOAT4(0.6f, 0.5f, 0.5f, 0.0f));
+	emitter->SetEmitterVelocity(XMFLOAT3(0, 4, 0));
+	emitter->SetEmitterPosition(position);
+	emitter->SetEmitterAcceleration(XMFLOAT3(0, 0, 0));
+
+	isWorldDirty = false;
+}
+
 Entity::Entity(Entity const & other)
 {
 	mesh = other.mesh;
@@ -135,6 +174,11 @@ Collider Entity::GetCollider()
 Mesh* Entity::GetMesh()
 {
 	return mesh;
+}
+
+Emitter * Entity::GetEmitter()
+{
+	return emitter;
 }
 
 void Entity::SetWorldMatrix(XMFLOAT4X4 worldMatrix)

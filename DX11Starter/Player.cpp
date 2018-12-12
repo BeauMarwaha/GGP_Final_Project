@@ -32,7 +32,7 @@ Player::Player(Mesh* m, Material* mat, int type, Emitter * E_M_I_T) :
 	exhaustEmitter->SetLifetime(2);
 	exhaustEmitter->SetStartSize(0.1f);
 	exhaustEmitter->SetEndSize(5.0f);
-	exhaustEmitter->SetStartColor(XMFLOAT4(0.1f, 0.1f, 1, 0.2f));
+	exhaustEmitter->SetStartColor(XMFLOAT4(0.1f, 1, 0.1f, 0.2f));
 	exhaustEmitter->SetEndColor(XMFLOAT4(0.1f, 0.6f, 1, 0.0f));
 	exhaustEmitter->SetEmitterVelocity(XMFLOAT3(0, 0, -4));
 	exhaustEmitter->SetEmitterPosition(XMFLOAT3(0, 0, 0));
