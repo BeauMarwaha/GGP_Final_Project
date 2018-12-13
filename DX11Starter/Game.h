@@ -67,6 +67,16 @@ private:
 	ID3D11RasterizerState* skyRastState;
 	ID3D11DepthStencilState* skyDepthState;
 
+	// Post process stuff -------------------
+	ID3D11RenderTargetView* normalRTV;		// Allows us to render to a texture after all normal rendering (before post processing)
+	ID3D11ShaderResourceView* normalSRV;	// Allows us to sample from the same texture as above
+	ID3D11RenderTargetView* brightRTV;		// Allows us to render all the bright pixels to a separate texture 
+	ID3D11ShaderResourceView* brightSRV;	// Allows us to sample from the same only bright pixels texture
+
+	SimpleVertexShader* ppVS;
+	SimplePixelShader* extractPS;           // Shader for extracting only the bright pixels to the bright RTV
+	SimplePixelShader* bloomPS;             // Shader for blurring the bright pixels and then adding it to the normal SRV to create bloom
+
 	// look at me, I am the E_M_I_T now
 	ID3D11DepthStencilState* particleDepthState;
 	ID3D11BlendState* particleBlendState;
