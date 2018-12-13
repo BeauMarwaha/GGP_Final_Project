@@ -18,5 +18,10 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Equation for determining how bright the pixel is
 	float brightness = original.r*.2126 + original.g*.7152 + original.b*.0722;
 
-	return original;	
+	if (brightness > 0.5f)
+	{
+		return original;
+	}
+
+	return float4(0.0f, 0.0f, 0.0f, 0.0f);
 }

@@ -23,8 +23,23 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Retrieve the color of the current pixel after normal rendering
 	float4 original = Pixels.Sample(Sampler, input.uv);
 
-	// Retrieve the color of the current pixel from extracted render target texture
-	float4 bright = BrightPixels.Sample(Sampler, input.uv);
+	float4 totalColor = float4(0, 0, 0, 0);
+	uint sampleCount = 0;
 
-	return original;
+	for (int y = -blurAmount; y <= blurAmount; y++)
+	{
+		for (int x = -blurAmount; x <= blurAmount; x++)
+		{
+			// Adjust uv for blur
+			float2 uv = input.uv + float2(x * pixelWidth, y * pixelHeight);
+			// Retrieve the color of the current pixel from extracted render target texture
+			totalColor += BrightPixels.Sample(Sampler, uv);
+
+			sampleCount++;
+		}
+	}
+
+	totalColor = totalColor / sampleCount;
+
+	return totalColor + original;
 }
