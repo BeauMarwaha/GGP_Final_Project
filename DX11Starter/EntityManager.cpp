@@ -98,7 +98,7 @@ EntityManager::~EntityManager()
 	names.clear();
 }
 
-bool EntityManager::UpdateEntities(float deltaTime, float totalTime, int * asteroidCount)
+bool EntityManager::UpdateEntities(float deltaTime, float totalTime, int * asteroidCount, Emitter* explosionEmitter)
 {
 	// Run the update method on all entities
 	for (auto& entity : entities)
@@ -115,6 +115,9 @@ bool EntityManager::UpdateEntities(float deltaTime, float totalTime, int * aster
 				{
 					if (other.second.entity->GetType() == (int)EntityType::Bullet)
 					{
+						// create an explosion
+						explosionEmitter->Explode(entity.second.entity->GetPosition());
+
 						// Bullet vs. Asteroid Collision -- Destroy both of them
 						RemoveEntity(entity.first);
 						RemoveEntity(other.first);

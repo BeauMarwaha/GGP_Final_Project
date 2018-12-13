@@ -148,7 +148,7 @@ public:
 	// returns a bool if we should change scenes
 	// janky and should probably change but for now
 	// its ok
-	bool UpdateEntities(float deltaTime, float totalTime, int * asteroidCount);
+	bool UpdateEntities(float deltaTime, float totalTime, int * asteroidCount, Emitter * explosionEmitter);
 
 	// Draws all entities with lighting
 	void DrawEntities(ID3D11DeviceContext* context, Camera* camera, DirectionalLight lights[], int lightCount, ID3D11ShaderResourceView* skySRV);

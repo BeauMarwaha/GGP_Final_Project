@@ -277,6 +277,41 @@ void Emitter::Draw(ID3D11DeviceContext* context, XMFLOAT4X4 viewMatrix, XMFLOAT4
 
 }
 
+void Emitter::Explode(DirectX::XMFLOAT3 position)
+{
+	// Update Emitter Position
+	emitterPosition = position;
+
+	// Spawn loads of particles
+	for (int i = 0; i < maxParticles; i++)
+	{
+		SpawnExplosionParticle();
+	}
+}
+
+void Emitter::SpawnExplosionParticle()
+{
+	// Check if there are any particles that need to spawn
+	if (livingParticleCount == maxParticles)
+		return;
+
+	// Reset the first dead particle
+	particles[firstDeadIndex].Age = 0;
+	particles[firstDeadIndex].Size = startSize;
+	particles[firstDeadIndex].Color = startColor;
+	particles[firstDeadIndex].Position = emitterPosition;
+	particles[firstDeadIndex].StartVelocity = XMFLOAT3(rand() % 10 + (-5), rand() % 10 + (-5), rand() % 10 + (-5));
+	particles[firstDeadIndex].StartVelocity.x += ((float)rand() / RAND_MAX) * 0.4f - 0.2f;
+	particles[firstDeadIndex].StartVelocity.y += ((float)rand() / RAND_MAX) * 0.4f - 0.2f;
+	particles[firstDeadIndex].StartVelocity.z += ((float)rand() / RAND_MAX) * 0.4f - 0.2f;
+
+	// Increment and wrap
+	firstDeadIndex++;
+	firstDeadIndex %= maxParticles;
+
+	livingParticleCount++;
+}
+
 DirectX::XMFLOAT3 Emitter::GetEmitterPosition()
 {
 	return emitterPosition;

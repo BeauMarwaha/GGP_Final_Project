@@ -306,8 +306,19 @@ void Game::CreateEntities()
 
 	// Create emitters and pass them to entities
 	entityManager->CreateEmitter("Exhaust_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
-	//entityManager->CreateEmitter("Test_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
-	
+	entityManager->CreateEmitter("Explosion_Emitter", device, "Particle_Vertex_Shader", "Particle_Pixel_Shader", "Particle", particleDepthState, particleBlendState);
+
+	// declare properties for explosion emitter
+	entityManager->GetEmitter("Explosion_Emitter")->SetParticlesPerSecod(0);
+	entityManager->GetEmitter("Explosion_Emitter")->SetMaxParticles(300);
+	entityManager->GetEmitter("Explosion_Emitter")->SetLifetime(1);
+	entityManager->GetEmitter("Explosion_Emitter")->SetStartSize(0.1f);
+	entityManager->GetEmitter("Explosion_Emitter")->SetEndSize(5.0f);
+	entityManager->GetEmitter("Explosion_Emitter")->SetStartColor(XMFLOAT4(1.0f, 0.1f, 0.1f, 0.2f));
+	entityManager->GetEmitter("Explosion_Emitter")->SetEndColor(XMFLOAT4(1.0f, 0.6f, 0.1f, 0.0f));
+	entityManager->GetEmitter("Explosion_Emitter")->SetEmitterVelocity(XMFLOAT3(0, 5, 0));
+	entityManager->GetEmitter("Explosion_Emitter")->SetEmitterPosition(XMFLOAT3(0, 0, 0));
+	entityManager->GetEmitter("Explosion_Emitter")->SetEmitterAcceleration(XMFLOAT3(0, 0, 0));
 
 	// Create entities using the previously set up resources
 	entityManager->CreateEntityWithEmitter("Player", "SpaceShip_Mesh", "SpaceShip_Material", "Exhaust_Emitter", EntityType::Player);
@@ -572,11 +583,11 @@ void Game::Update(float deltaTime, float totalTime)
 		// Update the camera
 		camera->Update(deltaTime, totalTime, entityManager->GetEntity("Player"), debugCameraEnabled);
 
-		// Update the test emitter
-		//entityManager->GetEmitter("Test_Emitter")->Update(deltaTime);
+		// Update the explosion emitter
+		entityManager->GetEmitter("Explosion_Emitter")->Update(deltaTime);
 
 		// Update all entities
-		bool playerCollision = entityManager->UpdateEntities(deltaTime, totalTime, asteroidCount);
+		bool playerCollision = entityManager->UpdateEntities(deltaTime, totalTime, asteroidCount, entityManager->GetEmitter("Explosion_Emitter"));
 		if (playerCollision)
 		{
 			currentScene = SceneState::GameOver;
@@ -713,6 +724,8 @@ void Game::Draw(float deltaTime, float totalTime)
 
 			// Draw player's emitter
 			((Player *)entityManager->GetEntity("Player"))->DrawEmitter(context, camera->GetViewMatrix(), camera->GetProjectionMatrix());
+			// draw the explosion emitter
+			entityManager->GetEmitter("Explosion_Emitter")->Draw(context, camera->GetViewMatrix(), camera->GetProjectionMatrix());
 			break;
 		case SceneState::Main:
 			// Draw the sky after you finish drawing opaque objects
