@@ -20,7 +20,7 @@ public:
 	// Set property for entity manager
 	void SetEntityManager(EntityManager* entityManager);
 
-	// Draw emitter seperately
+	// Overrride base draw for particles
 	void DrawEmitter(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 viewMatrix, DirectX::XMFLOAT4X4 projectionMatrix);
 
 private:
