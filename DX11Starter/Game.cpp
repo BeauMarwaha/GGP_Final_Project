@@ -56,7 +56,7 @@ Game::~Game()
 	// Delete the entity manager
 	delete entityManager;
 
-	// Delete the sky stuff
+	// Clean up the sky stuff
 	sampler->Release();
 	skySRV->Release();
 	skyDepthState->Release();
@@ -64,6 +64,15 @@ Game::~Game()
 	delete skyVS;
 	delete skyPS;
 	delete skyMesh;
+
+	// Clean up the post process stuff
+	normalSRV->Release();
+	brightSRV->Release();
+	normalRTV->Release();
+	brightRTV->Release();
+	delete ppVS;
+	delete extractPS;
+	delete bloomPS;
 
 	// Cease E_M_I_T
 	particleBlendState->Release();
@@ -112,6 +121,60 @@ void Game::Init()
 		CreateSky();
 		break;
 	}
+
+
+#pragma region Post Processing Setup
+	// Create post process resources -----------------------------------------
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.ArraySize = 1;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.MipLevels = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	ID3D11Texture2D* ppTexture;
+	device->CreateTexture2D(&textureDesc, 0, &ppTexture);
+
+	// Create the Render Target View
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	device->CreateRenderTargetView(ppTexture, &rtvDesc, &normalRTV);
+	device->CreateRenderTargetView(ppTexture, &rtvDesc, &brightRTV);
+
+	// Create the Shader Resource View
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = textureDesc.Format;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+
+	device->CreateShaderResourceView(ppTexture, &srvDesc, &normalSRV);
+	device->CreateShaderResourceView(ppTexture, &srvDesc, &brightSRV);
+
+	// We don't need the texture reference itself no mo'
+	ppTexture->Release();
+
+	// Create the vertex shader for post processing
+	ppVS = new SimpleVertexShader(device, context);
+	ppVS->LoadShaderFile(L"VertexShaderPostProcessing.cso");
+
+	// Create the pixel shader that extracts the bright pixels
+	extractPS = new SimplePixelShader(device, context);
+	extractPS->LoadShaderFile(L"PixelShaderExtractBright.cso");
+
+	// Create the pixel shader that blurs the bright pixels and adds them to the normal texture before post processing
+	bloomPS = new SimplePixelShader(device, context);
+	bloomPS->LoadShaderFile(L"PixelShaderBloom.cso");
+#pragma endregion Post Processing Setup
 
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
