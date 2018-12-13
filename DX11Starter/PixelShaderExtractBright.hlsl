@@ -12,11 +12,11 @@ SamplerState Sampler	: register(s0);
 
 float4 main(VertexToPixel input) : SV_TARGET
 {
-	// Retrieve the current color of the pixel after normal rendering
+	// Retrieve the color of the current pixel after normal rendering
 	float4 original = Pixels.Sample(Sampler, input.uv);
 
 	// Equation for determining how bright the pixel is
 	float brightness = original.r*.2126 + original.g*.7152 + original.b*.0722;
 
-	return float4(1.0f, 1.0f, 1.0f, 1.0f);	
+	return original;	
 }

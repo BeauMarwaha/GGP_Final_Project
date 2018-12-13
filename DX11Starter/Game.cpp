@@ -124,6 +124,18 @@ void Game::Init()
 
 
 #pragma region Post Processing Setup
+	// Create the vertex shader for post processing
+	ppVS = new SimpleVertexShader(device, context);
+	ppVS->LoadShaderFile(L"VertexShaderPostProcessing.cso");
+
+	// Create the pixel shader that extracts the bright pixels
+	extractPS = new SimplePixelShader(device, context);
+	extractPS->LoadShaderFile(L"PixelShaderExtractBright.cso");
+
+	// Create the pixel shader that blurs the bright pixels and adds them to the normal texture before post processing
+	bloomPS = new SimplePixelShader(device, context);
+	bloomPS->LoadShaderFile(L"PixelShaderBloom.cso");
+
 	// Create post process resources -----------------------------------------
 	D3D11_TEXTURE2D_DESC textureDesc = {};
 	textureDesc.Width = width;
@@ -138,8 +150,11 @@ void Game::Init()
 	textureDesc.SampleDesc.Quality = 0;
 	textureDesc.Usage = D3D11_USAGE_DEFAULT;
 
-	ID3D11Texture2D* ppTexture;
-	device->CreateTexture2D(&textureDesc, 0, &ppTexture);
+	ID3D11Texture2D* extractTexture;
+	device->CreateTexture2D(&textureDesc, 0, &extractTexture);
+
+	ID3D11Texture2D* bloomTexture;
+	device->CreateTexture2D(&textureDesc, 0, &bloomTexture);
 
 	// Create the Render Target View
 	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
@@ -147,8 +162,8 @@ void Game::Init()
 	rtvDesc.Texture2D.MipSlice = 0;
 	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 
-	device->CreateRenderTargetView(ppTexture, &rtvDesc, &normalRTV);
-	device->CreateRenderTargetView(ppTexture, &rtvDesc, &brightRTV);
+	device->CreateRenderTargetView(extractTexture, &rtvDesc, &normalRTV);
+	device->CreateRenderTargetView(bloomTexture, &rtvDesc, &brightRTV);
 
 	// Create the Shader Resource View
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -157,23 +172,12 @@ void Game::Init()
 	srvDesc.Texture2D.MostDetailedMip = 0;
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 
-	device->CreateShaderResourceView(ppTexture, &srvDesc, &normalSRV);
-	device->CreateShaderResourceView(ppTexture, &srvDesc, &brightSRV);
+	device->CreateShaderResourceView(extractTexture, &srvDesc, &normalSRV);
+	device->CreateShaderResourceView(bloomTexture, &srvDesc, &brightSRV);
 
-	// We don't need the texture reference itself no mo'
-	ppTexture->Release();
-
-	// Create the vertex shader for post processing
-	ppVS = new SimpleVertexShader(device, context);
-	ppVS->LoadShaderFile(L"VertexShaderPostProcessing.cso");
-
-	// Create the pixel shader that extracts the bright pixels
-	extractPS = new SimplePixelShader(device, context);
-	extractPS->LoadShaderFile(L"PixelShaderExtractBright.cso");
-
-	// Create the pixel shader that blurs the bright pixels and adds them to the normal texture before post processing
-	bloomPS = new SimplePixelShader(device, context);
-	bloomPS->LoadShaderFile(L"PixelShaderBloom.cso");
+	// We don't need the texture references themselves no mo'
+	extractTexture->Release();
+	bloomTexture->Release();
 #pragma endregion Post Processing Setup
 
 	// Tell the input assembler stage of the pipeline what kind of
@@ -687,13 +691,16 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Draw(float deltaTime, float totalTime)
 {
+	// Change to our "pre-post processing" render target (normal)
+	context->OMSetRenderTargets(1, &normalRTV, depthStencilView);
+
 	// Background color (Cornflower Blue in this case) for clearing
 	const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
 
 	// Clear the render target and depth buffer (erases what's on the screen)
 	//  - Do this ONCE PER FRAME
 	//  - At the beginning of Draw (before drawing *anything*)
-	context->ClearRenderTargetView(backBufferRTV, color);
+	context->ClearRenderTargetView(normalRTV, color);
 	context->ClearDepthStencilView(
 		depthStencilView,
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
@@ -730,6 +737,54 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Reset any changed render states!
 	context->RSSetState(0);
 	context->OMSetDepthStencilState(0, 0);
+
+	// Done with scene render - swap to the extracted bright pixels render target
+	context->OMSetRenderTargets(1, &brightRTV, 0);
+
+	// Post process draw ================================
+
+	context->ClearRenderTargetView(brightRTV, color);
+
+	// Set up my shaders
+	ppVS->SetShader();
+	extractPS->SetShader();
+	extractPS->CopyAllBufferData();
+
+	extractPS->SetShaderResourceView("Pixels", normalSRV);
+	extractPS->SetSamplerState("Sampler", sampler);
+
+	// Unbind vertex and index buffers!
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	ID3D11Buffer* nothing = 0;
+	context->IASetVertexBuffers(0, 1, &nothing, &stride, &offset);
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+
+	// Draw exactly 3 vertices
+	context->Draw(3, 0);
+
+	// Done with scene render - swap back to the back buffer
+	context->OMSetRenderTargets(1, &backBufferRTV, 0);
+	context->ClearRenderTargetView(backBufferRTV, color);
+
+	// Set up my shaders
+	ppVS->SetShader();
+	bloomPS->SetShader();
+	bloomPS->SetInt("blurAmount", 5);
+	bloomPS->SetFloat("pixelWidth", 1.0f / width);
+	bloomPS->SetFloat("pixelHeight", 1.0f / height);
+	bloomPS->CopyAllBufferData();
+
+	bloomPS->SetShaderResourceView("Pixels", normalSRV);
+	bloomPS->SetShaderResourceView("BrightPixels", brightSRV);
+	bloomPS->SetSamplerState("Sampler", sampler);
+
+	// Draw exactly 3 vertices
+	context->Draw(3, 0);
+
+	// Now that we're done, UNBIND the srv from the pixel shader
+	extractPS->SetShaderResourceView("Pixels", 0);
+	bloomPS->SetShaderResourceView("Pixels", 0);
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it
